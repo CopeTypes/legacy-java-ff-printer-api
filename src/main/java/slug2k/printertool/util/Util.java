@@ -1,4 +1,4 @@
-package de.slg.ddnss.printertool.util;
+package slug2k.printertool.util;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.zip.Checksum;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-import de.slg.ddnss.printertool.exceptions.FlashForgePrinterTransferException;
+import slug2k.printertool.exceptions.PrinterTransferException;
 
 public class Util {
 	
@@ -40,10 +40,10 @@ public class Util {
 	 * @param crc32Checksum
 	 * @param lastPackage
 	 * @return
-	 * @throws FlashForgePrinterTransferException 
+	 * @throws PrinterTransferException
 	 * @throws DecoderException
 	 */
-	private static byte[] generatePrintPrePayload(int packetBundleCounter, int packetSize, String crc32Checksum, boolean lastPackage) throws FlashForgePrinterTransferException {
+	private static byte[] generatePrintPrePayload(int packetBundleCounter, int packetSize, String crc32Checksum, boolean lastPackage) throws PrinterTransferException {
 		final byte[] printPrePayload = { (byte) 0x5a, (byte) 0x5a, (byte) 0xa5, (byte) 0xa5, // ZZ¥¥
 								   (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, // 4 bytes counter 
 								   (byte) 0x00, (byte) 0x00, (byte) 0x10, (byte) 0x00, // packetSize full = 0x00 0x00 0x10 0x00 = 4096
@@ -73,7 +73,7 @@ public class Util {
 		printPrePayload[11] = packetSizeByteArray[3];
 	}
 
-	public static void addChecksum(String crc32Checksum, byte[] printPrePayload) throws FlashForgePrinterTransferException {
+	public static void addChecksum(String crc32Checksum, byte[] printPrePayload) throws PrinterTransferException {
 		try {
 			byte[] decodeHex = null;
 			decodeHex = Hex.decodeHex("00000000".substring(crc32Checksum.length()) + crc32Checksum);
@@ -82,7 +82,7 @@ public class Util {
 			printPrePayload[13] = decodeHex[1];
 			printPrePayload[12] = decodeHex[0];			
 		} catch (Exception e) {
-			throw new FlashForgePrinterTransferException("Error while decoding String checksum to byte array!");
+			throw new PrinterTransferException("Error while decoding String checksum to byte array!");
 		}
 	}
 
@@ -93,7 +93,7 @@ public class Util {
 		return Long.toHexString(checksumValue);
 	}
 	
-	public static List<byte[]> prepareRawData(byte[] readAllLines) throws FlashForgePrinterTransferException {
+	public static List<byte[]> prepareRawData(byte[] readAllLines) throws PrinterTransferException {
 		List<byte[]> gcode = new ArrayList<>();
 
 		byte[] array = null;

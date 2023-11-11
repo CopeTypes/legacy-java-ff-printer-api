@@ -1,7 +1,7 @@
-package de.slg.ddnss.printertool.commands;
+package slug2k.printertool.commands.status;
 
-import de.slg.ddnss.printertool.Logger;
-import de.slg.ddnss.printertool.enums.MachineStatus;
+import slug2k.printertool.Logger;
+import slug2k.printertool.enums.MachineStatus;
 
 /**
  * @author GhostTypes

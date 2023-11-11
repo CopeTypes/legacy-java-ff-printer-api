@@ -1,6 +1,4 @@
-package de.slg.ddnss.printertool.commands;
-
-import de.slg.ddnss.printertool.Logger;
+package slug2k.printertool.commands.status;
 
 public class PrintStatus {
 

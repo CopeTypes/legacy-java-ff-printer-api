@@ -1,4 +1,4 @@
-package de.slg.ddnss.printertool.enums;
+package slug2k.printertool.enums;
 
 public enum MachineStatus {
     /**

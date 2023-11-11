@@ -1,10 +1,11 @@
 package me.ghost.printercontrol;
 
-import de.slg.ddnss.printertool.Logger;
-import de.slg.ddnss.printertool.clients.*;
-import de.slg.ddnss.printertool.commands.PrinterInfo;
-import de.slg.ddnss.printertool.exceptions.FlashForgePrinterException;
+import slug2k.printertool.Logger;
+import slug2k.printertool.clients.PrinterClient;
+import slug2k.printertool.commands.info.PrinterInfo;
+import slug2k.printertool.exceptions.PrinterException;
 import me.ghost.printercontrol.util.WebhookUtil;
+import slug2k.printertool.safety.ThermalSafety;
 
 public class Main {
 
@@ -15,7 +16,7 @@ public class Main {
             System.out.println("Usage: ff-print-control.jar printer_ip command_here");
             System.exit(0);
         }
-        try (AdventurerClient client = new AdventurerClient(args[0])) {
+        try (PrinterClient client = new PrinterClient(args[0])) {
             PrinterInfo printerInfo = client.getPrinterInfo();
             Logger.log("Connected to " + printerInfo.getMashineType() + " on firmware " + printerInfo.getFirmwareVersion());
             String command = args[1];
@@ -40,17 +41,27 @@ public class Main {
                         System.exit(-1);
                     }
                 }
+                case "temp_check" -> {
+                    if (args.length > 2) {
+                        ThermalSafety ts = new ThermalSafety(client, args[2]);
+                        ts.run();
+                        System.exit(0);
+                    } else {
+                        Logger.error("Invalid syntax, provide the webhook url after temp_check command.");
+                        System.exit(-1);
+                    }
+                }
             }
-        } catch (FlashForgePrinterException e) {
+        } catch (PrinterException e) {
             Logger.error(e.getMessage());
         }
     }
 
-    private static void runMCode(AdventurerClient client, String mcode) {
+    private static void runMCode(PrinterClient client, String mcode) {
         try {
             String response = client.sendCommand(mcode);
             Logger.log("Response:\n" + response);
-        } catch (FlashForgePrinterException e) {
+        } catch (PrinterException e) {
             e.printStackTrace();
         }
     }

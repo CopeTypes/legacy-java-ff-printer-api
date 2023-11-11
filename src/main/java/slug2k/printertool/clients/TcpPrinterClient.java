@@ -1,8 +1,8 @@
-package de.slg.ddnss.printertool.clients;
+package slug2k.printertool.clients;
 
-import de.slg.ddnss.printertool.Logger;
-import de.slg.ddnss.printertool.exceptions.FlashForgePrinterException;
-import de.slg.ddnss.printertool.exceptions.FlashForgePrinterTransferException;
+import slug2k.printertool.Logger;
+import slug2k.printertool.exceptions.PrinterException;
+import slug2k.printertool.exceptions.PrinterTransferException;
 import java.io.*;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
@@ -23,7 +23,7 @@ public class TcpPrinterClient implements Closeable {
 		this.hostname = hostname;
 	}
 
-	public String sendCommand(String cmd) throws FlashForgePrinterException {
+	public String sendCommand(String cmd) throws PrinterException {
 		//Logger.log("Send Command: " + cmd);
 		try {
 			checkSocket();
@@ -32,15 +32,15 @@ public class TcpPrinterClient implements Closeable {
 			writer.println(cmd);
 			return receiveMultiLineReplay(socket);
 		} catch (NoRouteToHostException e) {
-			throw new FlashForgePrinterTransferException("Error while connecting. No route to host ["  + socket.getInetAddress().getHostAddress() + "].");
+			throw new PrinterTransferException("Error while connecting. No route to host ["  + socket.getInetAddress().getHostAddress() + "].");
 		} catch (UnknownHostException e) {
-			throw new FlashForgePrinterTransferException("Error while connecting. Unknown host ["  + socket.getInetAddress().getHostAddress() + "].");
+			throw new PrinterTransferException("Error while connecting. Unknown host ["  + socket.getInetAddress().getHostAddress() + "].");
 		} catch (IOException e) {
-			throw new FlashForgePrinterException("Error while building or writing outputstream.", e);
+			throw new PrinterException("Error while building or writing outputstream.", e);
 		}
 	}
 
-	public void sendRawData(List<byte[]> rawData) throws FlashForgePrinterException {
+	public void sendRawData(List<byte[]> rawData) throws PrinterException {
 		try {
 			checkSocket();
 			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
@@ -50,15 +50,15 @@ public class TcpPrinterClient implements Closeable {
 				String replay = receiveSingleLineReplay(socket);
 				//Logger.log(replay);
 				if (!replay.matches("N\\d{4,}\\sok.")) {
-					throw new FlashForgePrinterTransferException("Error while transferring data.");
+					throw new PrinterTransferException("Error while transferring data.");
 				}
 			}
 		} catch (NoRouteToHostException e) {
-			throw new FlashForgePrinterTransferException("Error while connecting. No route to host ["  + socket.getInetAddress().getHostAddress() + "].");
+			throw new PrinterTransferException("Error while connecting. No route to host ["  + socket.getInetAddress().getHostAddress() + "].");
 		} catch (UnknownHostException e) {
-			throw new FlashForgePrinterTransferException("Error while connecting. Unknown host ["  + socket.getInetAddress().getHostAddress() + "].");
+			throw new PrinterTransferException("Error while connecting. Unknown host ["  + socket.getInetAddress().getHostAddress() + "].");
 		} catch (IOException e) {
-			throw new FlashForgePrinterException("Error while building or writing outputstream.", e);
+			throw new PrinterException("Error while building or writing outputstream.", e);
 		}
 	}
 
@@ -70,7 +70,7 @@ public class TcpPrinterClient implements Closeable {
 		}
 	}
 
-	public String receiveMultiLineReplay(Socket socket) throws FlashForgePrinterException {
+	public String receiveMultiLineReplay(Socket socket) throws PrinterException {
 		var answer = new StringBuilder();
 		BufferedReader reader;
 		try {
@@ -85,13 +85,13 @@ public class TcpPrinterClient implements Closeable {
 				}
 			}
 		} catch (IOException e) {
-			throw new FlashForgePrinterException("Error while building or reading inputstream.", e);
+			throw new PrinterException("Error while building or reading inputstream.", e);
 		}
 
 		return answer.toString().trim();
 	}
 
-	public String receiveSingleLineReplay(Socket socket) throws FlashForgePrinterException {
+	public String receiveSingleLineReplay(Socket socket) throws PrinterException {
 		BufferedReader reader;
 		try {
 			InputStream input = socket.getInputStream();
@@ -100,7 +100,7 @@ public class TcpPrinterClient implements Closeable {
 			String line = reader.readLine();
 			return line.trim();
 		} catch (IOException e) {
-			throw new FlashForgePrinterException("Error while building or reading inputstream.", e);
+			throw new PrinterException("Error while building or reading inputstream.", e);
 		}
 	}
 

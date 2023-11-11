@@ -1,4 +1,4 @@
-package de.slg.ddnss.printertool.commands;
+package slug2k.printertool.commands.info;
 
 public class LocationInfo {
 

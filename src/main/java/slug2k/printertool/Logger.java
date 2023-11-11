@@ -1,4 +1,4 @@
-package de.slg.ddnss.printertool;
+package slug2k.printertool;
 
 public class Logger {
     //placeholder for proper logging

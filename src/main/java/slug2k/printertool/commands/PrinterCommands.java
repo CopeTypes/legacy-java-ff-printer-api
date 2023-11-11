@@ -1,6 +1,6 @@
-package de.slg.ddnss.printertool.commands;
+package slug2k.printertool.commands;
 
-public class AdventurerCommands {
+public class PrinterCommands {
 
 	/**
 	 * Commands for FlashForge Adventurer 3 Printer, 
@@ -20,7 +20,6 @@ public class AdventurerCommands {
 	 * Returns the current XYZ locations
 	 */
 	public static final String CMD_INFO_XYZAB = "~M114";
-	public static final String CMD_INFO_CAL = "~M650";
 	/**
 	 * Gets the extruder & bed temp
 	 */

@@ -1,7 +1,7 @@
 package me.ghost.printercontrol.util;
 
-import de.slg.ddnss.printertool.Logger;
-import de.slg.ddnss.printertool.commands.PrintReport;
+import slug2k.printertool.Logger;
+import slug2k.printertool.commands.extra.PrintReport;
 
 import java.io.IOException;
 
