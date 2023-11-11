@@ -31,8 +31,14 @@ public class Main {
                     System.exit(0);
                 }
                 case "send_report" -> {
-                    WebhookUtil.sendPrintReport(client.getPrintReport());
-                    System.exit(0);
+                    if (args.length > 2) {
+                        WebhookUtil whUtil = new WebhookUtil(args[2]);
+                        whUtil.sendPrintReport(client.getPrintReport());
+                        System.exit(0);
+                    } else {
+                        Logger.error("Invalid syntax, provide the webhook url after send_report command.");
+                        System.exit(-1);
+                    }
                 }
             }
         } catch (FlashForgePrinterException e) {

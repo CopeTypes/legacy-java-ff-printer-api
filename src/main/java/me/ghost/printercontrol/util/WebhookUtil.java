@@ -7,10 +7,14 @@ import java.io.IOException;
 
 public class WebhookUtil {
 
-    private static final String WEBHOOK_URL = "https://discord.com/api/webhooks/1171639259715883060/DSEqbrsAi-S0dZ7zesRsbqC1a30VtKvdlZqiVFV2rvmgX1wRFMkYSB_PtY_JGswDYD0T";
+    private String webhookUrl = "";
 
-    public static void sendPrintReport(PrintReport printReport) {
-        DiscordWebhook webhook = new DiscordWebhook(WEBHOOK_URL);
+    public WebhookUtil(String webhookUrl) {
+        this.webhookUrl = webhookUrl;
+    }
+
+    public void sendPrintReport(PrintReport printReport) {
+        DiscordWebhook webhook = new DiscordWebhook(webhookUrl);
         webhook.addEmbed(new DiscordWebhook.EmbedObject()
                 .setTitle("Print Progress Update")
                 .setDescription("Current file: " + printReport.currentFile)
@@ -25,8 +29,8 @@ public class WebhookUtil {
         }
     }
 
-    public static void sendMessage(String title, String message) {
-        DiscordWebhook webhook = new DiscordWebhook(WEBHOOK_URL);
+    public void sendMessage(String title, String message) {
+        DiscordWebhook webhook = new DiscordWebhook(webhookUrl);
         webhook.addEmbed(new DiscordWebhook.EmbedObject()
                 .setTitle(title)
                 .setDescription(message)
