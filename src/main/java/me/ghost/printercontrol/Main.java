@@ -3,6 +3,7 @@ package me.ghost.printercontrol;
 import slug2k.printertool.Logger;
 import slug2k.printertool.clients.PrinterClient;
 import slug2k.printertool.commands.info.PrinterInfo;
+import slug2k.printertool.enums.MachineStatus;
 import slug2k.printertool.exceptions.PrinterException;
 import me.ghost.printercontrol.util.WebhookUtil;
 import slug2k.printertool.safety.ThermalSafety;
@@ -50,6 +51,12 @@ public class Main {
                         Logger.error("Invalid syntax, provide the webhook url after temp_check command.");
                         System.exit(-1);
                     }
+                }
+                case "print_check" -> {
+                    //Logger.log("test");
+                    MachineStatus machineStatus = client.getMachineStatus();
+                    if (machineStatus == MachineStatus.PAUSED || machineStatus == MachineStatus.READY) Logger.log("False");
+                    else Logger.log("True");
                 }
             }
         } catch (PrinterException e) {

@@ -64,20 +64,24 @@ public class PrinterClient extends TcpPrinterClient {
 	public void stopPrint() throws PrinterException {
 		Logger.log("Stopping current print");
 		sendCommand(PrinterCommands.CMD_PRINT_STOP);
-		EndstopStatus endstopStatus = getEndstopStatus();
 		Logger.log("Ensuring print is stopped successfully");
-		while (endstopStatus.machineStatus != MachineStatus.READY) {
+		while (!isPrintingStopped()) {
 			Logger.log("Print still running, sending M26 again.");
 			sendCommand(PrinterCommands.CMD_PRINT_STOP);
-			endstopStatus = getEndstopStatus();
 			try {Thread.sleep(1000);} catch (InterruptedException ignored) {}
 		}
 		Logger.log("Print stopped successfully");
 	}
 
+	private boolean isPrintingStopped() throws PrinterException {
+		EndstopStatus endstopStatus = getEndstopStatus();
+		return endstopStatus.machineStatus == MachineStatus.READY || endstopStatus.machineStatus == MachineStatus.PAUSED;
+	}
+
 	public boolean isPrinting() throws PrinterException {
 		return getMachineStatus() == MachineStatus.BUILDING_FROM_SD;
 	}
+
 
 	public MachineStatus getMachineStatus() throws PrinterException {
 		EndstopStatus endstopStatus = getEndstopStatus();
