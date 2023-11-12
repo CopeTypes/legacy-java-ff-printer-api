@@ -16,7 +16,6 @@ public enum MachineStatus {
     /**
      * The printer is currently paused (most likely at the end of a print if you haven't triggered it)
      */
-    PAUSED,
 
     DEFAULT
 }

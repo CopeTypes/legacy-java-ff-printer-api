@@ -75,7 +75,7 @@ public class PrinterClient extends TcpPrinterClient {
 
 	private boolean isPrintingStopped() throws PrinterException {
 		EndstopStatus endstopStatus = getEndstopStatus();
-		return endstopStatus.machineStatus == MachineStatus.READY || endstopStatus.machineStatus == MachineStatus.PAUSED;
+		return endstopStatus.machineStatus == MachineStatus.READY || endstopStatus.machineStatus == MachineStatus.BUILDING_COMPLETED;
 	}
 
 	public boolean isPrinting() throws PrinterException {

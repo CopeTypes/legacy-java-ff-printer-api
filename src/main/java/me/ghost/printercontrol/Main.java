@@ -3,6 +3,7 @@ package me.ghost.printercontrol;
 import slug2k.printertool.Logger;
 import slug2k.printertool.clients.PrinterClient;
 import slug2k.printertool.commands.info.PrinterInfo;
+import slug2k.printertool.commands.status.PrintStatus;
 import slug2k.printertool.enums.MachineStatus;
 import slug2k.printertool.exceptions.PrinterException;
 import me.ghost.printercontrol.util.WebhookUtil;
@@ -19,7 +20,7 @@ public class Main {
         }
         try (PrinterClient client = new PrinterClient(args[0])) {
             PrinterInfo printerInfo = client.getPrinterInfo();
-            Logger.log("Connected to " + printerInfo.getMashineType() + " on firmware " + printerInfo.getFirmwareVersion());
+            //Logger.log("Connected to " + printerInfo.getMashineType() + " on firmware " + printerInfo.getFirmwareVersion());
             String command = args[1];
             if (command.startsWith("M")) {
                 Logger.log("Sending MCode: " + command);
@@ -55,8 +56,12 @@ public class Main {
                 case "print_check" -> {
                     //Logger.log("test");
                     MachineStatus machineStatus = client.getMachineStatus();
-                    if (machineStatus == MachineStatus.PAUSED || machineStatus == MachineStatus.READY) Logger.log("False");
+                    if (machineStatus == MachineStatus.BUILDING_COMPLETED || machineStatus == MachineStatus.READY) Logger.log("False");
                     else Logger.log("True");
+                }
+                case "layer_data" -> {
+                    PrintStatus ps = client.getPrintStatus();
+                    Logger.log(ps.layerProgress);
                 }
             }
         } catch (PrinterException e) {
