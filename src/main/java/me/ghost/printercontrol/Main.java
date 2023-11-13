@@ -63,6 +63,10 @@ public class Main {
                     PrintStatus ps = client.getPrintStatus();
                     Logger.log(ps.layerProgress);
                 }
+                case "printer_name" -> {
+                    PrinterInfo info = client.getPrinterInfo();
+                    Logger.log(info.getName());
+                }
             }
         } catch (PrinterException e) {
             Logger.error(e.getMessage());

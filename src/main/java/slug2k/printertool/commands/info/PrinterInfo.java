@@ -3,53 +3,46 @@ package slug2k.printertool.commands.info;
 
 public class PrinterInfo {
 	
-	private String mashineType;
-	private String mashineName;
+	private String name;
+	private String nickname;
 	private String firmwareVersion;
-	private String seriesNr;
-	private String dimesions;
+	private String serialNumber;
+	private String dimensions;
 	private int toolCount;
 	private String mac;
-	
-	
-	public PrinterInfo() {
-	}
-	
-	/*
-	 * parses a string like:
-	 * 
-	 * Machine Type: FlashForge Adventurer III\n
-	 * Machine Name: My 3D Printer\n
-	 * Firmware: v1.1.7\n
-	 * SN: SNFFAD229083\n
-	 * X: 150 Y: 150 Z: 150\n
-	 * Tool Count: 1\n
-	 * Mac Address: 88:A9:A7:90:77:A5\n
-	 * \n
-	 * ok
+
+	/**
+	 *
+	 * Gets various information about the printer<br>
+	 * Made by Slugger2k, Updated by GhostTypes 11/12/23
 	 */
 	public PrinterInfo(String replay) {
 		String[] split = replay.split("\\n");
-		setMashineType(split[1].split(":")[1].trim());
-		setMashineName(split[2].split(":")[1].trim());
+		setName(split[1].split(":")[1].trim());
+		setNickname(split[2].split(":")[1].trim());
 		setFirmwareVersion(split[3].split(":")[1].trim());
-		setSeriesNr(split[4].split(":")[1].trim());
-		setDimesions(split[5].trim());
-		setToolCount(Integer.valueOf(split[6].split(":")[1].trim()));
+		setSerialNumber(split[4].split(":")[1].trim());
+		setDimensions(split[5].trim());
+		setToolCount(Integer.parseInt(split[6].split(":")[1].trim()));
 		setMac(split[7].trim());
 	}
-	
-	public String getMashineType() {
-		return mashineType;
+
+	/**
+	 * Gets the 'actual' name of the printer, like Adventurer 5M Pro
+	 */
+	public String getName() {
+		return name;
 	}
-	private void setMashineType(String mashineType) {
-		this.mashineType = mashineType;
+	private void setName(String name) { this.name = name; }
+
+	/**
+	 * Gets the 'friendly' name of the printer, like CoolGuy's 3D Printer
+	 */
+	public String getNickname() {
+		return nickname;
 	}
-	public String getMashineName() {
-		return mashineName;
-	}
-	private void setMashineName(String mashineName) {
-		this.mashineName = mashineName;
+	private void setNickname(String nickname) {
+		this.nickname = nickname;
 	}
 	public String getFirmwareVersion() {
 		return firmwareVersion;
@@ -57,17 +50,17 @@ public class PrinterInfo {
 	private void setFirmwareVersion(String firmwareVersion) {
 		this.firmwareVersion = firmwareVersion;
 	}
-	public String getSeriesNr() {
-		return seriesNr;
+	public String getSerialNumber() {
+		return serialNumber;
 	}
-	private void setSeriesNr(String seriesNr) {
-		this.seriesNr = seriesNr;
+	private void setSerialNumber(String seriesNr) {
+		this.serialNumber = seriesNr;
 	}
-	public String getDimesions() {
-		return dimesions;
+	public String getDimensions() {
+		return dimensions;
 	}
-	private void setDimesions(String dimesions) {
-		this.dimesions = dimesions;
+	private void setDimensions(String dimensions) {
+		this.dimensions = dimensions;
 	}
 	public int getToolCount() {
 		return toolCount;
@@ -84,8 +77,8 @@ public class PrinterInfo {
 
 	@Override
 	public String toString() {
-		return "PrinterInfo [mashineType=" + mashineType + ", mashineName=" + mashineName + ", firmwareVersion="
-				+ firmwareVersion + ", seriesNr=" + seriesNr + ", dimesions=" + dimesions + ", toolCount=" + toolCount
+		return "PrinterInfo [machineType=" + name + ", machineName=" + nickname + ", firmwareVersion="
+				+ firmwareVersion + ", serialNum=" + serialNumber + ", dimensions=" + dimensions + ", toolCount=" + toolCount
 				+ ", mac=" + mac + "]";
 	}
 
@@ -93,12 +86,12 @@ public class PrinterInfo {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((dimesions == null) ? 0 : dimesions.hashCode());
+		result = prime * result + ((dimensions == null) ? 0 : dimensions.hashCode());
 		result = prime * result + ((firmwareVersion == null) ? 0 : firmwareVersion.hashCode());
 		result = prime * result + ((mac == null) ? 0 : mac.hashCode());
-		result = prime * result + ((mashineName == null) ? 0 : mashineName.hashCode());
-		result = prime * result + ((mashineType == null) ? 0 : mashineType.hashCode());
-		result = prime * result + ((seriesNr == null) ? 0 : seriesNr.hashCode());
+		result = prime * result + ((nickname == null) ? 0 : nickname.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((serialNumber == null) ? 0 : serialNumber.hashCode());
 		result = prime * result + toolCount;
 		return result;
 	}
@@ -109,18 +102,18 @@ public class PrinterInfo {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		PrinterInfo other = (PrinterInfo) obj;
-		if (dimesions == null) { if (other.dimesions != null) return false;
-		} else if (!dimesions.equals(other.dimesions)) return false;
+		if (dimensions == null) { if (other.dimensions != null) return false;
+		} else if (!dimensions.equals(other.dimensions)) return false;
 		if (firmwareVersion == null) { if (other.firmwareVersion != null) return false;
 		} else if (!firmwareVersion.equals(other.firmwareVersion)) return false;
 		if (mac == null) { if (other.mac != null) return false;
 		} else if (!mac.equals(other.mac)) return false;
-		if (mashineName == null) { if (other.mashineName != null) return false;
-		} else if (!mashineName.equals(other.mashineName)) return false;
-		if (mashineType == null) { if (other.mashineType != null) return false;
-		} else if (!mashineType.equals(other.mashineType)) return false;
-		if (seriesNr == null) { if (other.seriesNr != null) return false;
-		} else if (!seriesNr.equals(other.seriesNr)) return false;
+		if (nickname == null) { if (other.nickname != null) return false;
+		} else if (!nickname.equals(other.nickname)) return false;
+		if (name == null) { if (other.name != null) return false;
+		} else if (!name.equals(other.name)) return false;
+		if (serialNumber == null) { if (other.serialNumber != null) return false;
+		} else if (!serialNumber.equals(other.serialNumber)) return false;
 		return toolCount == other.toolCount;
 	}
 	
