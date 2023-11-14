@@ -1,4 +1,4 @@
-package slug2k.printertool;
+package slug2k.ffapi;
 
 public class Logger {
     //placeholder for proper logging

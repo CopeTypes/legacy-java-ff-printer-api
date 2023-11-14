@@ -1,4 +1,4 @@
-package slug2k.printertool.enums;
+package slug2k.ffapi.enums;
 
 public enum MachineStatus {
     /**

@@ -1,7 +1,7 @@
-package me.ghost.printercontrol.util;
+package me.ghost.printapi.util;
 
-import slug2k.printertool.Logger;
-import slug2k.printertool.commands.extra.PrintReport;
+import slug2k.ffapi.Logger;
+import slug2k.ffapi.commands.extra.PrintReport;
 
 import java.io.IOException;
 

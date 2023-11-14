@@ -1,4 +1,4 @@
-package slug2k.printertool.commands.status;
+package slug2k.ffapi.commands.status;
 
 public class PrintStatus {
 

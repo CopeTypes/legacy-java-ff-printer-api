@@ -1,9 +1,9 @@
-package slug2k.printertool.safety;
+package slug2k.ffapi.safety;
 
-import slug2k.printertool.clients.PrinterClient;
-import slug2k.printertool.commands.info.TempInfo;
-import slug2k.printertool.exceptions.PrinterException;
-import me.ghost.printercontrol.util.WebhookUtil;
+import slug2k.ffapi.clients.PrinterClient;
+import slug2k.ffapi.commands.info.TempInfo;
+import slug2k.ffapi.exceptions.PrinterException;
+import me.ghost.printapi.util.WebhookUtil;
 
 /**
  * External temperature safety checks.

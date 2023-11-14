@@ -1,4 +1,4 @@
-package slug2k.printertool.util;
+package slug2k.ffapi.util;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ import java.util.zip.Checksum;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-import slug2k.printertool.exceptions.PrinterTransferException;
+import slug2k.ffapi.exceptions.PrinterTransferException;
 
 public class Util {
 	

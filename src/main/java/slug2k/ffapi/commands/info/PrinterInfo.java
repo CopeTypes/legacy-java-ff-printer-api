@@ -1,4 +1,4 @@
-package slug2k.printertool.commands.info;
+package slug2k.ffapi.commands.info;
 
 
 public class PrinterInfo {

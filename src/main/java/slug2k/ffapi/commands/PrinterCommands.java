@@ -1,4 +1,4 @@
-package slug2k.printertool.commands;
+package slug2k.ffapi.commands;
 
 public class PrinterCommands {
 

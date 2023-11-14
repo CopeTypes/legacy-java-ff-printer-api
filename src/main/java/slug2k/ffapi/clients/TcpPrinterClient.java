@@ -1,8 +1,8 @@
-package slug2k.printertool.clients;
+package slug2k.ffapi.clients;
 
-import slug2k.printertool.Logger;
-import slug2k.printertool.exceptions.PrinterException;
-import slug2k.printertool.exceptions.PrinterTransferException;
+import slug2k.ffapi.Logger;
+import slug2k.ffapi.exceptions.PrinterException;
+import slug2k.ffapi.exceptions.PrinterTransferException;
 import java.io.*;
 import java.net.NoRouteToHostException;
 import java.net.Socket;

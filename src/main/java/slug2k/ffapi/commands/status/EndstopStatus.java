@@ -1,7 +1,7 @@
-package slug2k.printertool.commands.status;
+package slug2k.ffapi.commands.status;
 
-import slug2k.printertool.Logger;
-import slug2k.printertool.enums.MachineStatus;
+import slug2k.ffapi.Logger;
+import slug2k.ffapi.enums.MachineStatus;
 
 /**
  * @author GhostTypes

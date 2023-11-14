@@ -1,17 +1,17 @@
-package slug2k.printertool.clients;
+package slug2k.ffapi.clients;
 
-import slug2k.printertool.Logger;
-import slug2k.printertool.commands.extra.PrintReport;
-import slug2k.printertool.commands.info.LocationInfo;
-import slug2k.printertool.commands.info.PrinterInfo;
-import slug2k.printertool.commands.info.TempInfo;
-import slug2k.printertool.commands.status.EndstopStatus;
-import slug2k.printertool.commands.status.PrintStatus;
-import slug2k.printertool.enums.MachineStatus;
-import slug2k.printertool.exceptions.PrinterException;
-import slug2k.printertool.exceptions.PrinterTransferException;
-import slug2k.printertool.util.Util;
-import slug2k.printertool.commands.PrinterCommands;
+import slug2k.ffapi.Logger;
+import slug2k.ffapi.commands.extra.PrintReport;
+import slug2k.ffapi.commands.info.LocationInfo;
+import slug2k.ffapi.commands.info.PrinterInfo;
+import slug2k.ffapi.commands.info.TempInfo;
+import slug2k.ffapi.commands.status.EndstopStatus;
+import slug2k.ffapi.commands.status.PrintStatus;
+import slug2k.ffapi.enums.MachineStatus;
+import slug2k.ffapi.exceptions.PrinterException;
+import slug2k.ffapi.exceptions.PrinterTransferException;
+import slug2k.ffapi.util.Util;
+import slug2k.ffapi.commands.PrinterCommands;
 
 import java.util.List;
 

@@ -1,13 +1,13 @@
-package me.ghost.printercontrol;
+package me.ghost.printapi;
 
-import slug2k.printertool.Logger;
-import slug2k.printertool.clients.PrinterClient;
-import slug2k.printertool.commands.info.PrinterInfo;
-import slug2k.printertool.commands.status.PrintStatus;
-import slug2k.printertool.enums.MachineStatus;
-import slug2k.printertool.exceptions.PrinterException;
-import me.ghost.printercontrol.util.WebhookUtil;
-import slug2k.printertool.safety.ThermalSafety;
+import slug2k.ffapi.Logger;
+import slug2k.ffapi.clients.PrinterClient;
+import slug2k.ffapi.commands.info.PrinterInfo;
+import slug2k.ffapi.commands.status.PrintStatus;
+import slug2k.ffapi.enums.MachineStatus;
+import slug2k.ffapi.exceptions.PrinterException;
+import me.ghost.printapi.util.WebhookUtil;
+import slug2k.ffapi.safety.ThermalSafety;
 
 public class Main {
 

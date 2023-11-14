@@ -1,4 +1,4 @@
-package slug2k.printertool.exceptions;
+package slug2k.ffapi.exceptions;
 
 public class PrinterTransferException extends PrinterException {
 

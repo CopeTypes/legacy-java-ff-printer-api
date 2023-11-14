@@ -1,4 +1,4 @@
-package me.ghost.printercontrol.util;
+package me.ghost.printapi.util;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.Color;

@@ -1,8 +1,8 @@
-package slug2k.printertool.commands.extra;
+package slug2k.ffapi.commands.extra;
 
-import slug2k.printertool.commands.info.TempInfo;
-import slug2k.printertool.commands.status.EndstopStatus;
-import slug2k.printertool.commands.status.PrintStatus;
+import slug2k.ffapi.commands.info.TempInfo;
+import slug2k.ffapi.commands.status.EndstopStatus;
+import slug2k.ffapi.commands.status.PrintStatus;
 
 public class PrintReport {
     public String layerProgress;
