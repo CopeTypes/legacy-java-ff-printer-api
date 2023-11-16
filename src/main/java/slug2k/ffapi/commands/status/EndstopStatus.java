@@ -2,6 +2,7 @@ package slug2k.ffapi.commands.status;
 
 import slug2k.ffapi.Logger;
 import slug2k.ffapi.enums.MachineStatus;
+import slug2k.ffapi.enums.MoveMode;
 
 /**
  * @author GhostTypes
@@ -11,7 +12,8 @@ public class EndstopStatus {
 
     //Endstop: stuff about x/y max and zmin that is useless
     public MachineStatus machineStatus;
-    public String moveMode;
+    //public String moveMode;
+    public MoveMode moveMode;
 
     public boolean ledEnabled;
 
@@ -26,9 +28,22 @@ public class EndstopStatus {
             case "BUILDING_FROM_SD" -> this.machineStatus = MachineStatus.BUILDING_FROM_SD;
             case "BUILDING_COMPLETED" -> this.machineStatus = MachineStatus.BUILDING_COMPLETED;
             case "READY" -> this.machineStatus = MachineStatus.READY;
-            default -> Logger.log("Encountered MachineStatus not currently in enum: " + machineStatus);
+            default -> {
+                Logger.log("Encountered MachineStatus not currently in enum: " + machineStatus);
+                this.machineStatus = MachineStatus.DEFAULT;
+            }
         }
-        moveMode = data[3].replace("MoveMode: ", "").trim();
+        String moveM = data[3].replace("MoveMode: ", "").trim();
+        switch (moveM) {
+            case "MOVING" -> this.moveMode = MoveMode.MOVING;
+            case "PAUSED" -> this.moveMode = MoveMode.PAUSED;
+            //todo document other modes, there's like 2 or 3 more
+            default -> {
+                Logger.log("Encountered MachineStatus not currently in enum: " + moveM);
+                this.moveMode = MoveMode.DEFAULT;
+            }
+        }
+
         //status = data[4] useless
         int led = Integer.parseInt(data[5].replace("LED: ", "").trim());
         ledEnabled = led == 1;

@@ -1,5 +1,6 @@
 package slug2k.ffapi.safety;
 
+import me.ghost.printapi.util.EmbedColors;
 import slug2k.ffapi.clients.PrinterClient;
 import slug2k.ffapi.commands.info.TempInfo;
 import slug2k.ffapi.exceptions.PrinterException;
@@ -27,7 +28,7 @@ public class ThermalSafety {
         if (!areTempsSafe()) {
             //todo would probably be safer to immediately stop the printer and/or cut off power
             //need to see if MCode for either of those things is supported by Flashforge's firmware.
-            whUtil.sendMessage("Thermal Safety Alert", "One or more of the printer's temperature values exceeded a safe limit, the current print is being cancelled now.");
+            whUtil.sendMessage("Thermal Safety Alert", "One or more of the printer's temperature values exceeded a safe limit, the current print is being cancelled now.", EmbedColors.RED);
             client.stopPrint();
         }
     }

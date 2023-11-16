@@ -3,6 +3,7 @@ package me.ghost.printapi.util;
 import slug2k.ffapi.Logger;
 import slug2k.ffapi.commands.extra.PrintReport;
 
+import java.awt.*;
 import java.io.IOException;
 
 public class WebhookUtil {
@@ -29,11 +30,12 @@ public class WebhookUtil {
         }
     }
 
-    public void sendMessage(String title, String message) {
+    public void sendMessage(String title, String message, String color) {
         DiscordWebhook webhook = new DiscordWebhook(webhookUrl);
         webhook.addEmbed(new DiscordWebhook.EmbedObject()
                 .setTitle(title)
                 .setDescription(message)
+                .setColor(Color.decode(color))
         );
         try {
             webhook.execute();

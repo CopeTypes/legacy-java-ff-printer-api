@@ -8,6 +8,7 @@ import slug2k.ffapi.commands.info.TempInfo;
 import slug2k.ffapi.commands.status.EndstopStatus;
 import slug2k.ffapi.commands.status.PrintStatus;
 import slug2k.ffapi.enums.MachineStatus;
+import slug2k.ffapi.enums.MoveMode;
 import slug2k.ffapi.exceptions.PrinterException;
 import slug2k.ffapi.exceptions.PrinterTransferException;
 import slug2k.ffapi.util.Util;
@@ -86,6 +87,11 @@ public class PrinterClient extends TcpPrinterClient {
 	public MachineStatus getMachineStatus() throws PrinterException {
 		EndstopStatus endstopStatus = getEndstopStatus();
 		return endstopStatus.machineStatus;
+	}
+
+	public MoveMode getMoveStatus() throws PrinterException {
+		EndstopStatus endstopStatus = getEndstopStatus();
+		return endstopStatus.moveMode;
 	}
 
 	public TempInfo getTempInfo() throws PrinterException {
