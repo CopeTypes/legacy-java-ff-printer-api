@@ -43,9 +43,9 @@ public class NetworkUtil {
     }
 
     // todo impl color args / enum for it
-    public static boolean sendImageToWebhook(String webhook, String title, String message, File image) {
+    public static boolean sendImageToWebhook(String webhook, String title, String message, File image, String color) {
         WebhookClient wh = WebhookClient.withUrl(webhook);
-        WebhookEmbed embed = new WebhookEmbedBuilder().setTitle(new WebhookEmbed.EmbedTitle(title, null)).setDescription(message).setImageUrl("attachment://capture.jpg").build();
+        WebhookEmbed embed = new WebhookEmbedBuilder().setTitle(new WebhookEmbed.EmbedTitle(title, null)).setDescription(message).setImageUrl("attachment://capture.jpg").setColor(Integer.valueOf(color)).build();
         WebhookMessage msg = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
         AtomicBoolean ret = new AtomicBoolean(false);
         wh.send(msg).thenAccept((msgg) -> ret.set(true));
