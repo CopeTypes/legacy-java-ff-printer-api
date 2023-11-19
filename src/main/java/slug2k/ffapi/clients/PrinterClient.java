@@ -52,6 +52,7 @@ public class PrinterClient extends TcpPrinterClient {
 
 	public PrinterInfo getPrinterInfo() throws PrinterException {
 		String replay = sendCommand(PrinterCommands.CMD_INFO_STATUS).trim();
+		//Logger.log(replay);
 		return new PrinterInfo(replay);
 	}
 

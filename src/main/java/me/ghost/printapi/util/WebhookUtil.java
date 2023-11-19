@@ -44,4 +44,7 @@ public class WebhookUtil {
         }
     }
 
+    public String getUrl() {
+        return webhookUrl;
+    }
 }

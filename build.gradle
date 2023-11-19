@@ -23,6 +23,6 @@ test {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'me.ghost.printercontrol.Main'
+        attributes 'Main-Class': 'me.ghost.printapi.Main'
     }
 }

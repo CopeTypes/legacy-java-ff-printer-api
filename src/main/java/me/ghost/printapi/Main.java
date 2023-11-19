@@ -22,7 +22,7 @@ public class Main {
             System.exit(0);
         }
         try (PrinterClient client = new PrinterClient(args[0])) {
-            PrinterInfo printerInfo = client.getPrinterInfo();
+            //PrinterInfo printerInfo = client.getPrinterInfo();
             //Logger.log("Connected to " + printerInfo.getMashineType() + " on firmware " + printerInfo.getFirmwareVersion());
             String command = args[1];
             if (command.startsWith("M")) {
