@@ -15,6 +15,7 @@ public enum MoveMode {
      * Check MachineStatus, PrintStatus, or EndstopStatus for more info
      */
     PAUSED,
+    READY,
     DEFAULT
 
 }

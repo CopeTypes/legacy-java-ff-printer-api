@@ -6,10 +6,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class PrintMonitorApi {
 
-    private static final Path SCRIPT_PATH = FileUtil.getExecutionPath().resolve("PrintMonitor.py");
+    private static String scriptPath = Paths.get(FileUtil.getExecutionPath().toString(), "config.json").toString();
 
     public static class DefectStatus {
         public boolean defect;
@@ -33,7 +34,7 @@ public class PrintMonitorApi {
     public static DefectStatus getDefectStatus() throws IOException {
         if (!checkScriptPath()) throw new IOException("Cannot check for defect, PrintMonitor.py not found.");
         runCommand("check_defect");
-        Path resultFile = SCRIPT_PATH.resolve("defect.txt");
+        Path resultFile = Paths.get(FileUtil.getExecutionPath().toString(), "defect.txt");
         if (!Files.exists(resultFile)) throw new IOException("Cannot check for defect, result file not found after executing command.");
         String result = Files.readString(resultFile);
         String[] results = result.split("\n");
@@ -41,9 +42,9 @@ public class PrintMonitorApi {
     }
 
     private static boolean checkScriptPath() {
-        if (!Files.exists(SCRIPT_PATH)) {
+        if (!Files.exists(Path.of(scriptPath))) {
             // todo automatically download this once it's open source
-            Logger.error("PrintMonitorApi error, PrintMonitor.py not found at: " + SCRIPT_PATH);
+            Logger.error("PrintMonitorApi error, PrintMonitor.py not found at: " + scriptPath);
             Logger.log("Place PrintMonitor.py at the given path above, and make sure to configure the settings.");
             return false;
         }
@@ -52,14 +53,14 @@ public class PrintMonitorApi {
 
     private static boolean runCommand(String command) {
         if (!checkScriptPath()) return false;
-        ProcessBuilder pb = new ProcessBuilder("python", SCRIPT_PATH.toString(), command);
+        ProcessBuilder pb = new ProcessBuilder("python", scriptPath.toString(), command);
         try {
             Process p = pb.start();
             return p.waitFor() == 0;
         } catch (IOException | InterruptedException e) {
             Logger.error("PrintMonitorApi error trying to run command: " + command);
             Logger.error(e.getMessage());
-            Logger.log("SCRIPT_PATH=" + SCRIPT_PATH);
+            Logger.log("scriptPath=" + scriptPath);
             return false;
         }
     }

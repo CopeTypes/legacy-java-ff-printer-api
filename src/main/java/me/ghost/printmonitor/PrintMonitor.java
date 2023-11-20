@@ -16,6 +16,7 @@ import slug2k.ffapi.safety.ThermalSafety;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -100,7 +101,8 @@ public class PrintMonitor {
             sleep(300000); // every 30 minutes
             if (commandLock || syncing) sleep(5000);
             try {
-                String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
+                //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
+                String out = Paths.get(FileUtil.getExecutionPath().toString(), "capture.jpg").toString();
                 if (!saveImageFromWebcam(out)) {
                     Logger.error("Unable to send print report to discord, failed to save image from printer webcam.");
                     return;
@@ -189,7 +191,8 @@ public class PrintMonitor {
     }
 
     private boolean sendImageToWebhook(String title, String message, String color) {
-        String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
+        //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
+        String out = Paths.get(FileUtil.getExecutionPath().toString(), "capture.jpg").toString();
         if (!saveImageFromWebcam(out)) return false;
         return NetworkUtil.sendImageToWebhook(webhook.getUrl(), title, message, new File(out), color);
     }

@@ -24,7 +24,7 @@ public class EndstopStatus {
         String[] data = replay.split("\n");
         //endstop = data[1] useless
         String machineStatus = data[2].replace("MachineStatus: ", "").trim();
-        switch (machineStatus) {
+        /*switch (machineStatus) {
             case "BUILDING_FROM_SD" -> this.machineStatus = MachineStatus.BUILDING_FROM_SD;
             case "BUILDING_COMPLETED" -> this.machineStatus = MachineStatus.BUILDING_COMPLETED;
             case "READY" -> this.machineStatus = MachineStatus.READY;
@@ -32,9 +32,15 @@ public class EndstopStatus {
                 Logger.log("Encountered MachineStatus not currently in enum: " + machineStatus);
                 this.machineStatus = MachineStatus.DEFAULT;
             }
+        }*/
+        if (machineStatus.contains("BUILDING_FROM_SD")) this.machineStatus = MachineStatus.BUILDING_FROM_SD;
+        else if (machineStatus.contains("BUILDING_COMPLETED")) this.machineStatus = MachineStatus.BUILDING_COMPLETED;
+        else if (machineStatus.contains("READY")) this.machineStatus = MachineStatus.READY;
+        else {
+            Logger.log("Encountered unknown MachineStatus: " + machineStatus);
         }
         String moveM = data[3].replace("MoveMode: ", "").trim();
-        switch (moveM) {
+        /*switch (moveM) {
             case "MOVING" -> this.moveMode = MoveMode.MOVING;
             case "PAUSED" -> this.moveMode = MoveMode.PAUSED;
             //todo document other modes, there's like 2 or 3 more
@@ -42,6 +48,13 @@ public class EndstopStatus {
                 Logger.log("Encountered MachineStatus not currently in enum: " + moveM);
                 this.moveMode = MoveMode.DEFAULT;
             }
+        }*/
+        if (moveM.contains("MOVING")) this.moveMode = MoveMode.MOVING;
+        else if (moveM.contains("PAUSED")) this.moveMode = MoveMode.PAUSED;
+        else if (moveM.contains("READY")) this.moveMode = MoveMode.READY;
+        else {
+            Logger.log("Encountered unknown MoveMode: " + moveM);
+            this.moveMode = MoveMode.DEFAULT;
         }
 
         //status = data[4] useless

@@ -8,13 +8,17 @@ import slug2k.ffapi.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Config {
     public String webhookUrl = null;
     public String apiKey = null;
 
     public Config() {
-        Path config = FileUtil.getExecutionPath().resolve("config.json");
+        //Path config = FileUtil.getExecutionPath().resolve("config.json");
+        Path config = Paths.get(FileUtil.getExecutionPath().toString(), "config.json");
+        Logger.log(config.toString());
+
         if (!Files.exists(config)) {
             Logger.error("Config.json not found, please run the python script first and configure it.");
             System.exit(-1);
