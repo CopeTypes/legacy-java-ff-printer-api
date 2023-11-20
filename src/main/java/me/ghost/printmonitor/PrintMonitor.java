@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 import static me.ghost.printapi.util.PrintMonitorApi.DefectStatus;
 
 public class PrintMonitor {
-    private String printerIp;
+    //private String printerIp; don't really think we'll need the ip in this for anything?
     //private String webhookUrl;
     private WebhookUtil webhook;
     private PrinterClient client;
@@ -42,7 +42,7 @@ public class PrintMonitor {
     private final Executor executor = Executors.newCachedThreadPool();
 
     public PrintMonitor(String printerIp, String webhookUrl) throws PrinterException, InterruptedException {
-        this.printerIp = printerIp;
+        //this.printerIp = printerIp;
         webhook = new WebhookUtil(webhookUrl);
         client = new PrinterClient(printerIp);
         webcam = new PrinterWebcam(printerIp);
@@ -55,7 +55,7 @@ public class PrintMonitor {
             Logger.log("Waiting for print job to start...");
             waitForPrintJob();
         }
-        webhook.sendMessage("Monitoring " + printerInfo.getName(), "Local IP: " + printerIp, EmbedColors.BLUE);
+        webhook.sendMessage("Monitoring " + printerInfo.getName(), "Job: " + getJobName(), EmbedColors.BLUE);
         executor.execute(this::safetyThread);
         executor.execute(this::detectionThread);
         executor.execute(this::discordThread);
@@ -98,7 +98,7 @@ public class PrintMonitor {
         Logger.log("Discord thread started");
         while (isPrinting) {
             sleep(300000); // every 30 minutes
-            if (commandLock) sleep(5000);
+            if (commandLock || syncing) sleep(5000);
             try {
                 String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
                 if (!saveImageFromWebcam(out)) {
@@ -235,6 +235,14 @@ public class PrintMonitor {
             isPrinting = client.isPrinting();
             sleep(2500);
         }
+    }
+
+    private String getJobName() throws PrinterException {
+        commandLock = true;
+        EndstopStatus es = client.getEndstopStatus();
+        sleep(500);
+        commandLock = false;
+        return es.currentFile;
     }
 
 }
