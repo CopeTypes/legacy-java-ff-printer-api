@@ -38,8 +38,14 @@ public class ThermalSafety {
 
     private boolean areTempsSafe() throws PrinterException {
         TempInfo temps = client.getTempInfo();
-        if (Integer.parseInt(temps.extruderTemp) >= EXTRUDER_MAX) return false;
-        return Integer.parseInt(temps.bedTemp) < BED_MAX;
+        String extruder = temps.extruderTemp;
+        if (extruder.contains("/")) extruder = extruder.split("/")[0].trim();
+        if (extruder.contains(".")) extruder = extruder.split("\\.")[0].trim();
+        if (Integer.parseInt(extruder) >= EXTRUDER_MAX) return false;
+        String bed = temps.bedTemp;
+        if (bed.contains("/")) bed = bed.split("/")[0].trim();
+        if (bed.contains(".")) bed = bed.split("\\.")[0].trim();
+        return Integer.parseInt(bed) < BED_MAX;
     }
 
 }

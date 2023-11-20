@@ -72,6 +72,11 @@ public class PrintMonitor {
             sleep(5000);
             try {
                 DefectStatus status = PrintMonitorApi.getDefectStatus();
+                if (status == null) {
+                    Logger.log("DefectStatus is null");
+                    //todo stop the print after 5 failed defect checks for safety
+                    return;
+                }
                 if (status.defect) {
                     if (!sendImageToWebhook("Print Defect Detected", "Defect detected in the last print check", EmbedColors.RED)) {
                         Logger.error("Defect detected, unable to get webcam capture.");

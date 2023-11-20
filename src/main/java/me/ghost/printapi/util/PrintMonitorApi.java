@@ -38,7 +38,13 @@ public class PrintMonitorApi {
         if (!Files.exists(resultFile)) throw new IOException("Cannot check for defect, result file not found after executing command.");
         String result = Files.readString(resultFile);
         String[] results = result.split("\n");
-        return new DefectStatus(Boolean.parseBoolean(results[0]), Float.parseFloat(results[1]));
+        try {
+            return new DefectStatus(Boolean.parseBoolean(results[0]), Float.parseFloat(results[1]));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Logger.error("Error getting DefectStatus: " + e.getMessage());
+            return null;
+        }
+        //return new DefectStatus(Boolean.parseBoolean(results[0]), Float.parseFloat(results[1]));
     }
 
     private static boolean checkScriptPath() {
