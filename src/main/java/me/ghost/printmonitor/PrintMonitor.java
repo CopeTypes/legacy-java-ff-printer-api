@@ -202,8 +202,12 @@ public class PrintMonitor {
         commandLock = true;
         printerInfo = client.getPrinterInfo();
         Thread.sleep(500);
+        EndstopStatus es = client.getEndstopStatus();
+        if (!es.ledEnabled) { // make sure the lights are on
+            Thread.sleep(500);
+            client.setLed(true);
+        }
         commandLock = false;
-        //todo is there anything else that should be done here?
     }
 
     private void sync() throws PrinterException, InterruptedException {
