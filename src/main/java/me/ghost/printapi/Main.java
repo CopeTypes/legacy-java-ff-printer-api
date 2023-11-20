@@ -64,7 +64,7 @@ public class Main {
                 }
                 case "layer_data" -> {
                     PrintStatus ps = client.getPrintStatus();
-                    Logger.log(ps.layerProgress);
+                    Logger.log(ps.rawLayerProgress);
                 }
                 case "printer_name" -> {
                     PrinterInfo info = client.getPrinterInfo();

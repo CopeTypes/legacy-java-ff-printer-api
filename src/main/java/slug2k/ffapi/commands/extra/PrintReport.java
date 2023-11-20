@@ -5,7 +5,7 @@ import slug2k.ffapi.commands.status.EndstopStatus;
 import slug2k.ffapi.commands.status.PrintStatus;
 
 public class PrintReport {
-    public String layerProgress;
+    public LayerProgress layerProgress;
     public String extruderTemp;
     public String bedTemp;
 

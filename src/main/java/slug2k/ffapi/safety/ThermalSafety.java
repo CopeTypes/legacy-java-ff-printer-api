@@ -19,6 +19,8 @@ public class ThermalSafety {
     private PrinterClient client;
     private WebhookUtil whUtil;
 
+    public boolean safe = true;
+
     public ThermalSafety(PrinterClient client, String webhookUrl) {
         this.client = client;
         whUtil = new WebhookUtil(webhookUrl);
@@ -26,6 +28,7 @@ public class ThermalSafety {
 
     public void run() throws PrinterException {
         if (!areTempsSafe()) {
+            safe = false;
             //todo would probably be safer to immediately stop the printer and/or cut off power
             //need to see if MCode for either of those things is supported by Flashforge's firmware.
             whUtil.sendMessage("Thermal Safety Alert", "One or more of the printer's temperature values exceeded a safe limit, the current print is being cancelled now.", EmbedColors.RED);

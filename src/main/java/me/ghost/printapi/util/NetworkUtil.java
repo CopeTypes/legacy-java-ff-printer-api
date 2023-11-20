@@ -6,6 +6,7 @@ import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import club.minnced.discord.webhook.send.WebhookMessage;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import slug2k.ffapi.Logger;
+import slug2k.ffapi.commands.extra.PrintReport;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +50,22 @@ public class NetworkUtil {
         WebhookMessage msg = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
         AtomicBoolean ret = new AtomicBoolean(false);
         wh.send(msg).thenAccept((msgg) -> ret.set(true));
+        return ret.get();
+    }
+
+    public static boolean sendPrintReport(String webhook, PrintReport report, File image) {
+        WebhookClient wh = WebhookClient.withUrl(webhook);
+        WebhookEmbed embed = new WebhookEmbedBuilder()
+                .setTitle(new WebhookEmbed.EmbedTitle("Print Status Report", null))
+                .setDescription("Stats on the current print job")
+                .addField(new WebhookEmbed.EmbedField(false, "Current File", report.currentFile))
+                .addField(new WebhookEmbed.EmbedField(false, "Print Progress", report.layerProgress.progress + "%"))
+                .addField(new WebhookEmbed.EmbedField(false, "Extruder Temp", report.extruderTemp))
+                .addField(new WebhookEmbed.EmbedField(false, "Bed Temp", report.bedTemp))
+                .build();
+        WebhookMessage message = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
+        AtomicBoolean ret = new AtomicBoolean(false);
+        wh.send(message).thenAccept((msgg) -> ret.set(true));
         return ret.get();
     }
 

@@ -19,9 +19,9 @@ public class WebhookUtil {
         webhook.addEmbed(new DiscordWebhook.EmbedObject()
                 .setTitle("Print Progress Update")
                 .setDescription("Current file: " + printReport.currentFile)
-                .addField("Layer Progress", printReport.layerProgress, true)
-                .addField("Extruder Temp", printReport.extruderTemp, true)
-                .addField("Bed Temp", printReport.bedTemp, true)
+                .addField("Print progress", printReport.layerProgress.progress + "%", false)
+                .addField("Extruder Temp", printReport.extruderTemp, false)
+                .addField("Bed Temp", printReport.bedTemp, false)
         );
         try {
             webhook.execute();

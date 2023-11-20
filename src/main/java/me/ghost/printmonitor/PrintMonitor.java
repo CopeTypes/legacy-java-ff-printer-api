@@ -1,10 +1,7 @@
 package me.ghost.printmonitor;
 
 import me.ghost.printapi.PrinterWebcam;
-import me.ghost.printapi.util.EmbedColors;
-import me.ghost.printapi.util.FileUtil;
-import me.ghost.printapi.util.NetworkUtil;
-import me.ghost.printapi.util.WebhookUtil;
+import me.ghost.printapi.util.*;
 import slug2k.ffapi.Logger;
 import slug2k.ffapi.clients.PrinterClient;
 import slug2k.ffapi.commands.extra.PrintReport;
@@ -15,11 +12,14 @@ import slug2k.ffapi.commands.status.PrintStatus;
 import slug2k.ffapi.enums.MachineStatus;
 import slug2k.ffapi.enums.MoveMode;
 import slug2k.ffapi.exceptions.PrinterException;
+import slug2k.ffapi.safety.ThermalSafety;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import static me.ghost.printapi.util.PrintMonitorApi.DefectStatus;
 
 public class PrintMonitor {
     private String printerIp;
@@ -28,21 +28,21 @@ public class PrintMonitor {
     private PrinterClient client;
     private PrinterWebcam webcam;
 
-    private TempInfo tempInfo;
-    private PrintStatus printStatus;
-    private EndstopStatus endstopStatus;
-    private MachineStatus machineStatus;
-    private MoveMode moveStatus;
+    //private TempInfo tempInfo;
+    //private PrintStatus printStatus;
+    //private EndstopStatus endstopStatus;
+    //private MachineStatus machineStatus;
+    //private MoveMode moveStatus;
     private PrinterInfo printerInfo;
 
     private boolean isPrinting = true;
     private boolean commandLock = false;
+    private boolean syncing = false;
 
-    private Executor executor = Executors.newCachedThreadPool();
+    private final Executor executor = Executors.newCachedThreadPool();
 
     public PrintMonitor(String printerIp, String webhookUrl) throws PrinterException, InterruptedException {
         this.printerIp = printerIp;
-        //this.webhookUrl = webhookUrl;
         webhook = new WebhookUtil(webhookUrl);
         client = new PrinterClient(printerIp);
         webcam = new PrinterWebcam(printerIp);
@@ -55,27 +55,60 @@ public class PrintMonitor {
             Logger.log("Waiting for print job to start...");
             waitForPrintJob();
         }
+        webhook.sendMessage("Monitoring " + printerInfo.getName(), "Local IP: " + printerIp, EmbedColors.BLUE);
+        executor.execute(this::safetyThread);
+        executor.execute(this::detectionThread);
         executor.execute(this::discordThread);
         executor.execute(this::syncThread);
     }
 
+    /**
+     * Handles defect/failure detection and auto-cancels print if necessary
+     */
+    private void detectionThread() {
+        Logger.log("Failure detection thread started");
+        while (isPrinting) {
+            sleep(5000);
+            try {
+                DefectStatus status = PrintMonitorApi.getDefectStatus();
+                if (status.defect) {
+                    if (!sendImageToWebhook("Print Defect Detected", "Defect detected in the last print check", EmbedColors.RED)) {
+                        Logger.error("Defect detected, unable to get webcam capture.");
+                        webhook.sendMessage("Print Defect Detected", "There was a defect detected in the last print check, but capturing the webcam failed.", EmbedColors.RED);
+                    }
+                    if (status.score >= 0.6F) {
+                        if (!sendImageToWebhook("Print Failure Detected", "The current print has failed, aborting now", EmbedColors.RED)) {
+                            Logger.error("Failure detected, unable to get webcam capture.");
+                            webhook.sendMessage("Print Failure Detected", "Aborting print now (unable to capture webcam)", EmbedColors.RED);
+                        }
+                        failureShutdown();
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                Logger.error("Failed to check print defect status: " + e.getMessage());
+            }
+        }
+    }
 
+    /**
+     * Handles sending status updates with an image to Discord every 5 minutes
+     */
     private void discordThread() {
         Logger.log("Discord thread started");
         while (isPrinting) {
-            sleep(30000);
+            sleep(300000); // every 30 minutes
             if (commandLock) sleep(5000);
             try {
                 String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
-                if (!webcam.getCapture(out)) {
-                    Logger.error("Failed to get webcam capture on discordThread()");
+                if (!saveImageFromWebcam(out)) {
+                    Logger.error("Unable to send print report to discord, failed to save image from printer webcam.");
                     return;
                 }
                 PrintReport report = client.getPrintReport();
-                boolean sent = sendImageToWebhook("Print Progress Update", "Current progress of your print", EmbedColors.BLUE);
-                if (!sent) Logger.error("Error while sending image to webhook, image not sent.");
-                //NetworkUtil.sendImageToWebhook(webhook.getUrl(), "Print Progress Update", "Current progress of your print", new File(out), EmbedColors.BLUE);
-                webhook.sendPrintReport(report);
+                if (!NetworkUtil.sendPrintReport(webhook.getUrl(), report, new File(out))) Logger.error("Failed to send print report to discord webhook.");
+                //if (!sendImageToWebhook("Print Progress Update", "Current progress of your print", EmbedColors.BLUE)) Logger.error("Error while sending image to webhook, image not sent.");
+                //webhook.sendPrintReport(report);
             } catch (PrinterException e) {
                 Logger.error("Error getting print report on discordThread(): " + e);
             }
@@ -83,24 +116,81 @@ public class PrintMonitor {
         sendImageToWebhook("Print Complete!", "Your print has finished!", EmbedColors.GREEN);
     }
 
+    /**
+     * Handles syncing the printer data every 5 seconds
+     */
     private void syncThread() {
         Logger.log("Sync thread started");
         while (isPrinting) {
-            sleep(30000); //todo mess around with the interval
+            sleep(5000);
             try {
                 sync();
-            } catch (PrinterException e) { // todo error handling?
+            } catch (PrinterException e) {
                 Logger.error("Sync failure: " + e.getMessage());
+                sleep(5000);
+                try {
+                    sync();
+                } catch (Exception ignored) {
+                    shutdownFailsafe();
+                }
             } catch (InterruptedException ignored) {}
         }
     }
 
-    private boolean sendImageToWebhook(String title, String message, String color) {
-        String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
+    /**
+     * Handles the safety checks and auto-cancels print if one fails
+     */
+    private void safetyThread() {
+        Logger.log("Safety thread started");
+        ThermalSafety thermalSafety = new ThermalSafety(client, webhook.getUrl());
+        while (isPrinting) {
+            sleep(5000);
+            if (syncing) sleep(1500);
+            try {
+                thermalSafety.run();
+            } catch (PrinterException e) {
+                Logger.error("ThermalSafety run failure: " + e.getMessage());
+                if (!thermalSafety.safe) failureShutdown();
+            }
+        }
+    }
+
+    private void failureShutdown() {
+        try {
+            client.stopPrint();
+            webhook.sendMessage("Print stopped", "Print aborted due to failure", EmbedColors.GREEN);
+        } catch (PrinterException e) { // this *should* never happen, but it's better safe than sorry
+            Logger.error("Error while trying to abort print failure: " + e);
+            webhook.sendMessage("Aborting print failed", "There was an error trying to abort the print, starting failsafe.", EmbedColors.RED);
+            shutdownFailsafe();
+            webhook.sendMessage("Success", "Successfully aborted print", EmbedColors.GREEN);
+        }
+    }
+
+    private void shutdownFailsafe() {
+        boolean stopped = false;
+        while (!stopped) {
+            try {
+                stopped = client.isPrinting();
+            } catch (PrinterException ignored) {}
+            try {
+                client.stopPrint();
+            } catch (PrinterException ignored) {}
+        }
+    }
+
+    private boolean saveImageFromWebcam(String out) {
+        //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
         if (!webcam.getCapture(out)) {
             Logger.error("sendImageToWebhook failed to get capture from printer webcam.");
             return false;
         }
+        return true;
+    }
+
+    private boolean sendImageToWebhook(String title, String message, String color) {
+        String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
+        if (!saveImageFromWebcam(out)) return false;
         return NetworkUtil.sendImageToWebhook(webhook.getUrl(), title, message, new File(out), color);
     }
 
@@ -117,20 +207,22 @@ public class PrintMonitor {
     }
 
     private void sync() throws PrinterException, InterruptedException {
+        syncing = true;
         commandLock = true;
-        tempInfo = client.getTempInfo();
-        Thread.sleep(500);
-        printStatus = client.getPrintStatus();
-        Thread.sleep(500);
-        endstopStatus = client.getEndstopStatus();
-        Thread.sleep(500);
-        machineStatus = client.getMachineStatus();
-        Thread.sleep(500);
-        moveStatus = client.getMoveStatus();
+        //tempInfo = client.getTempInfo();
+        //Thread.sleep(500);
+        //printStatus = client.getPrintStatus();
+        //Thread.sleep(500);
+        //endstopStatus = client.getEndstopStatus();
+        //Thread.sleep(500);
+        //machineStatus = client.getMachineStatus();
+        //Thread.sleep(500);
+        //moveStatus = client.getMoveStatus();
         Thread.sleep(500);
         isPrinting = client.isPrinting();
         Thread.sleep(500);
         commandLock = false;
+        syncing = false;
     }
 
     private void waitForPrintJob() throws PrinterException {
@@ -140,4 +232,5 @@ public class PrintMonitor {
             sleep(2500);
         }
     }
+
 }
