@@ -40,6 +40,8 @@ public class PrintMonitor {
     private boolean commandLock = false;
     private boolean syncing = false;
 
+    private int checkFails = 0;
+
     private final Executor executor = Executors.newCachedThreadPool();
 
     public PrintMonitor(String printerIp, String webhookUrl) throws PrinterException, InterruptedException {
@@ -56,7 +58,10 @@ public class PrintMonitor {
             Logger.log("Waiting for print job to start...");
             waitForPrintJob();
         }
-        webhook.sendMessage("Monitoring " + printerInfo.getName(), "Job: " + getJobName(), EmbedColors.BLUE);
+        //webhook.sendMessage("Monitoring " + printerInfo.getName(), "Job: " + getJobName(), EmbedColors.BLUE);
+        sendImageToWebhook("Monitoring " + printerInfo.getName(), "Job: " + getJobName(), EmbedColors.BLUE);
+        PrintMonitorApi.refreshUUIDs();
+        sleep(500);
         executor.execute(this::safetyThread);
         executor.execute(this::detectionThread);
         executor.execute(this::discordThread);
@@ -74,10 +79,14 @@ public class PrintMonitor {
                 Logger.log("Checking DefectStatus");
                 DefectStatus status = PrintMonitorApi.getDefectStatus();
                 if (status == null) {
-                    Logger.log("DefectStatus is null");
-                    //todo stop the print after 5 failed defect checks for safety
+                    checkFails++; // failsafe triggered after 5 failed defect checks in a row
+                    if (checkFails >= 5) {
+                        webhook.sendMessage("Detection Failure", "There have been multiple failed defect checks in a short period of time, aborting the print.", EmbedColors.RED);
+                        failureShutdown();
+                    }
                     return;
                 }
+                if (checkFails > 0) checkFails--;
                 if (status.defect) {
                     if (!sendImageToWebhook("Print Defect Detected", "Defect detected in the last print check", EmbedColors.RED)) {
                         Logger.error("Defect detected, unable to get webcam capture.");
@@ -103,25 +112,27 @@ public class PrintMonitor {
      */
     private void discordThread() {
         Logger.log("Discord thread started");
+        sendDiscordReport();
         while (isPrinting) {
             sleep(300000); // every 5 minutes
             if (commandLock || syncing) sleep(5000);
-            try {
-                //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
-                String out = Paths.get(FileUtil.getExecutionPath().toString(), "capture.jpg").toString();
-                if (!saveImageFromWebcam(out)) {
-                    Logger.error("Unable to send print report to discord, failed to save image from printer webcam.");
-                    return;
-                }
-                PrintReport report = client.getPrintReport();
-                if (!NetworkUtil.sendPrintReport(webhook.getUrl(), report, new File(out))) Logger.error("Failed to send print report to discord webhook.");
-                //if (!sendImageToWebhook("Print Progress Update", "Current progress of your print", EmbedColors.BLUE)) Logger.error("Error while sending image to webhook, image not sent.");
-                //webhook.sendPrintReport(report);
-            } catch (PrinterException e) {
-                Logger.error("Error getting print report on discordThread(): " + e);
-            }
+            sendDiscordReport();
         }
         sendImageToWebhook("Print Complete!", "Your print has finished!", EmbedColors.GREEN);
+    }
+
+    private void sendDiscordReport() {
+        try {
+            String out = Paths.get(FileUtil.getExecutionPath().toString(), "capture.jpg").toString();
+            if (!saveImageFromWebcam(out)) {
+                Logger.error("Unable to send print report to discord, failed to save image from printer webcam.");
+                return;
+            }
+            PrintReport report = client.getPrintReport();
+            if (!NetworkUtil.sendPrintReport(webhook.getUrl(), report, new File(out))) Logger.error("Failed to send print report to discord webhook.");
+        } catch (PrinterException e) {
+            Logger.error("Error getting print report for sendDiscordReport: " + e);
+        }
     }
 
     /**
@@ -139,6 +150,8 @@ public class PrintMonitor {
                 try {
                     sync();
                 } catch (Exception ignored) {
+                    Logger.log("Sync lost with printer, aborting current job for safety.");
+                    webhook.sendMessage("Sync failed", "Unable to sync with printer, attempting to abort current job.", EmbedColors.RED);
                     shutdownFailsafe();
                 }
             } catch (InterruptedException ignored) {}
@@ -204,7 +217,9 @@ public class PrintMonitor {
     }
 
     private void sleep(long millis) {
-        try { Thread.sleep(millis); } catch (Exception ignored) {}
+        try { Thread.sleep(millis); } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void init() throws PrinterException, InterruptedException {

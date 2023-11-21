@@ -37,13 +37,4 @@ public class Main {
             Logger.error("Unable to start PrintMonitor: " + e.getMessage());
         }
     }
-
-    private static void runMCode(PrinterClient client, String mcode) {
-        try {
-            String response = client.sendCommand(mcode);
-            Logger.log("Response:\n" + response);
-        } catch (PrinterException e) {
-            e.printStackTrace();
-        }
-    }
 }

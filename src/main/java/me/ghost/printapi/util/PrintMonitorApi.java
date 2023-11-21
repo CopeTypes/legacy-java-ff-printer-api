@@ -32,8 +32,6 @@ public class PrintMonitorApi {
      * @see me.ghost.printapi.util.PrintMonitorApi.DefectStatus
      * @throws IOException Error with python script
      */
-    //todo need to implement this python script side
-    //todo need to add python script to repo
     public static DefectStatus getDefectStatus() throws IOException {
         if (!checkScriptPath()) throw new IOException("Cannot check for defect, PrintMonitor.py not found.");
         runCommand("check_defect");
@@ -49,6 +47,15 @@ public class PrintMonitorApi {
             return null;
         }
         //return new DefectStatus(Boolean.parseBoolean(results[0]), Float.parseFloat(results[1]));
+    }
+
+    /**
+     * Sets the current printer/ticket id used in the python script<br>
+     * Should only be used once per session
+     * @return boolean
+     */
+    public static boolean refreshUUIDs() {
+        return runCommand("new_uuids");
     }
 
     private static boolean checkScriptPath() {
