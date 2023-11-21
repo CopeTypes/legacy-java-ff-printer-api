@@ -2,15 +2,18 @@ package me.ghost.printapi.util;
 
 import slug2k.ffapi.Logger;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 public class PrintMonitorApi {
 
-    private static String scriptPath = Paths.get(FileUtil.getExecutionPath().toString(), "config.json").toString();
+    private static String scriptPath = Paths.get(FileUtil.getExecutionPath().toString(), "PrintMonitor.py").toString();
 
     public static class DefectStatus {
         public boolean defect;
@@ -34,9 +37,10 @@ public class PrintMonitorApi {
     public static DefectStatus getDefectStatus() throws IOException {
         if (!checkScriptPath()) throw new IOException("Cannot check for defect, PrintMonitor.py not found.");
         runCommand("check_defect");
-        Path resultFile = Paths.get(FileUtil.getExecutionPath().toString(), "defect.txt");
-        if (!Files.exists(resultFile)) throw new IOException("Cannot check for defect, result file not found after executing command.");
-        String result = Files.readString(resultFile);
+        //Path resultFile = Paths.get(FileUtil.getExecutionPath().toString(), "defect.txt");
+        File resultFile = new File(FileUtil.getExecutionPath(), "defect.txt");
+        if (!Files.exists(resultFile.toPath())) throw new IOException("Cannot check for defect, result file not found after executing command.");
+        String result = Files.readString(resultFile.toPath());
         String[] results = result.split("\n");
         try {
             return new DefectStatus(Boolean.parseBoolean(results[0]), Float.parseFloat(results[1]));
@@ -59,10 +63,17 @@ public class PrintMonitorApi {
 
     private static boolean runCommand(String command) {
         if (!checkScriptPath()) return false;
-        ProcessBuilder pb = new ProcessBuilder("python", scriptPath.toString(), command);
+        ProcessBuilder pb = new ProcessBuilder("python", scriptPath, command);
+        pb.redirectErrorStream(true);
+        //Logger.log("Command is:" + pb.command().toString());
         try {
             Process p = pb.start();
-            return p.waitFor() == 0;
+            /*try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) Logger.log("[PythonAPI] " + line);
+            }*/
+            int exitCode = p.waitFor();
+            return exitCode == 0;
         } catch (IOException | InterruptedException e) {
             Logger.error("PrintMonitorApi error trying to run command: " + command);
             Logger.error(e.getMessage());

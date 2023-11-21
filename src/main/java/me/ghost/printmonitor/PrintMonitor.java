@@ -71,6 +71,7 @@ public class PrintMonitor {
         while (isPrinting) {
             sleep(5000);
             try {
+                Logger.log("Checking DefectStatus");
                 DefectStatus status = PrintMonitorApi.getDefectStatus();
                 if (status == null) {
                     Logger.log("DefectStatus is null");
@@ -103,7 +104,7 @@ public class PrintMonitor {
     private void discordThread() {
         Logger.log("Discord thread started");
         while (isPrinting) {
-            sleep(300000); // every 30 minutes
+            sleep(300000); // every 5 minutes
             if (commandLock || syncing) sleep(5000);
             try {
                 //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();

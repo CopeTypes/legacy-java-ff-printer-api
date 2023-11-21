@@ -12,6 +12,8 @@ public class TempInfo {
         String[] tempData = data[1].split(" ");
         extruderTemp = tempData[0].replace("T0:", "").replace("/0.0", "");
         bedTemp = tempData[2].replace("B:", "").replace("/0.0", "");
+        //todo the parsing for this should be done better
+        //should have different vars for current/set temp for the bed & extruder
     }
 
 }
