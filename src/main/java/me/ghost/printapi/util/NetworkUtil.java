@@ -8,6 +8,7 @@ import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import slug2k.ffapi.Logger;
 import slug2k.ffapi.commands.extra.PrintReport;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,12 +46,19 @@ public class NetworkUtil {
 
     // todo impl color args / enum for it
     public static boolean sendImageToWebhook(String webhook, String title, String message, File image, String color) {
+        Color c;
+        if (color.startsWith("0x")) c = hexToColor(color);
+        else c = new Color(Integer.parseInt(color));
         WebhookClient wh = WebhookClient.withUrl(webhook);
-        WebhookEmbed embed = new WebhookEmbedBuilder().setTitle(new WebhookEmbed.EmbedTitle(title, null)).setDescription(message).setImageUrl("attachment://capture.jpg").setColor(Integer.valueOf(color)).build();
+        WebhookEmbed embed = new WebhookEmbedBuilder().setTitle(new WebhookEmbed.EmbedTitle(title, null)).setDescription(message).setImageUrl("attachment://capture.jpg").setColor(c.getRGB()).build();
         WebhookMessage msg = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
-        AtomicBoolean ret = new AtomicBoolean(false);
-        wh.send(msg).thenAccept((msgg) -> ret.set(true));
-        return ret.get();
+        try {
+            wh.send(msg);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public static boolean sendPrintReport(String webhook, PrintReport report, File image) {
@@ -62,11 +70,24 @@ public class NetworkUtil {
                 .addField(new WebhookEmbed.EmbedField(false, "Print Progress", report.layerProgress.progress + "%"))
                 .addField(new WebhookEmbed.EmbedField(false, "Extruder Temp", report.extruderTemp))
                 .addField(new WebhookEmbed.EmbedField(false, "Bed Temp", report.bedTemp))
+                .setImageUrl("attachment://capture.jpg")
                 .build();
         WebhookMessage message = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
-        AtomicBoolean ret = new AtomicBoolean(false);
-        wh.send(message).thenAccept((msgg) -> ret.set(true));
-        return ret.get();
+        try {
+            wh.send(message);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
+    private static Color hexToColor(String hexColor) {
+        if (hexColor.startsWith("0x")) hexColor = hexColor.substring(2);
+        long colorValue = Long.parseLong(hexColor, 16);
+        int red = (int) ((colorValue >> 16) & 0xFF);
+        int green = (int) ((colorValue >> 8) & 0xFF);
+        int blue = (int) (colorValue & 0xFF);
+        return new Color(red, green, blue);
+    }
 }

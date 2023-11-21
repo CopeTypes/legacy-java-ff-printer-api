@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static me.ghost.printapi.util.PrintMonitorApi.DefectStatus;
@@ -42,7 +43,7 @@ public class PrintMonitor {
 
     private int checkFails = 0;
 
-    private final Executor executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public PrintMonitor(String printerIp, String webhookUrl) throws PrinterException, InterruptedException {
         //this.printerIp = printerIp;
@@ -66,6 +67,7 @@ public class PrintMonitor {
         executor.execute(this::detectionThread);
         executor.execute(this::discordThread);
         executor.execute(this::syncThread);
+        //Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdown));
     }
 
     /**
@@ -118,7 +120,7 @@ public class PrintMonitor {
             if (commandLock || syncing) sleep(5000);
             sendDiscordReport();
         }
-        sendImageToWebhook("Print Complete!", "Your print has finished!", EmbedColors.GREEN);
+        //sendImageToWebhook("Print Complete!", "Your print has finished!", EmbedColors.GREEN);
     }
 
     private void sendDiscordReport() {
@@ -156,6 +158,8 @@ public class PrintMonitor {
                 }
             } catch (InterruptedException ignored) {}
         }
+        sendImageToWebhook("Print Complete!", "Your print has finished!", EmbedColors.GREEN);
+        System.exit(0);
     }
 
     /**
@@ -213,7 +217,8 @@ public class PrintMonitor {
         //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
         String out = Paths.get(FileUtil.getExecutionPath().toString(), "capture.jpg").toString();
         if (!saveImageFromWebcam(out)) return false;
-        return NetworkUtil.sendImageToWebhook(webhook.getUrl(), title, message, new File(out), color);
+        NetworkUtil.sendImageToWebhook(webhook.getUrl(), title, message, new File(out), color);
+        return true;
     }
 
     private void sleep(long millis) {
