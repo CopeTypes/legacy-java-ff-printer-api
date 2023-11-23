@@ -67,7 +67,7 @@ public class NetworkUtil {
                 .setTitle(new WebhookEmbed.EmbedTitle("Print Status Report", null))
                 .setDescription("Stats on the current print job")
                 .addField(new WebhookEmbed.EmbedField(false, "Current File", report.currentFile))
-                .addField(new WebhookEmbed.EmbedField(false, "Print Progress", report.layerProgress.progress + "%"))
+                .addField(new WebhookEmbed.EmbedField(false, "Print Progress", Math.round(report.layerProgress.progress) + "%"))
                 .addField(new WebhookEmbed.EmbedField(false, "Extruder Temp", report.extruderTemp))
                 .addField(new WebhookEmbed.EmbedField(false, "Bed Temp", report.bedTemp))
                 .setImageUrl("attachment://capture.jpg")

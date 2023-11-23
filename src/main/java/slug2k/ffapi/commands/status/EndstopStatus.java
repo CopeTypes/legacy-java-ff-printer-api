@@ -22,17 +22,9 @@ public class EndstopStatus {
     public EndstopStatus(String replay) {
         //Logger.log("PrinterEndstopStatus raw replay:\n" + replay);
         String[] data = replay.split("\n");
-        //endstop = data[1] useless
+        //todo this threw ArrayIndexOutOfBounds (2 out of bounds for length 1) and not sure why
+        //made a temporary fix in PrinterClient but should really figure out why that happens/happened
         String machineStatus = data[2].replace("MachineStatus: ", "").trim();
-        /*switch (machineStatus) {
-            case "BUILDING_FROM_SD" -> this.machineStatus = MachineStatus.BUILDING_FROM_SD;
-            case "BUILDING_COMPLETED" -> this.machineStatus = MachineStatus.BUILDING_COMPLETED;
-            case "READY" -> this.machineStatus = MachineStatus.READY;
-            default -> {
-                Logger.log("Encountered MachineStatus not currently in enum: " + machineStatus);
-                this.machineStatus = MachineStatus.DEFAULT;
-            }
-        }*/
         if (machineStatus.contains("BUILDING_FROM_SD")) this.machineStatus = MachineStatus.BUILDING_FROM_SD;
         else if (machineStatus.contains("BUILDING_COMPLETED")) this.machineStatus = MachineStatus.BUILDING_COMPLETED;
         else if (machineStatus.contains("READY")) this.machineStatus = MachineStatus.READY;

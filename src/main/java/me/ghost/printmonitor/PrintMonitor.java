@@ -39,8 +39,6 @@ public class PrintMonitor {
     private PrinterInfo printerInfo;
 
     private boolean isPrinting = true;
-    private boolean commandLock = false;
-    private boolean syncing = false;
 
     private int checkFails = 0;
 
@@ -57,7 +55,7 @@ public class PrintMonitor {
         webcam = new PrinterWebcam(printerIp);
         thermalSafety = new ThermalSafety(client, webhookUrl);
 
-        long t = System.currentTimeMillis() - 30000;
+        long t = System.currentTimeMillis() - 300000;
         lastSync.setTime(t);
         lastDiscordSync.setTime(t);
         lastTempCheck.setTime(t);
@@ -80,35 +78,27 @@ public class PrintMonitor {
 
     private void checkThread() {
         while (isPrinting) {
-            if (lastFailCheck.hasPassed(5000)) { // Check for print defects/failure every 5sec
-                lastFailCheck.reset();
-                defectCheck();
-            }
-            if (lastSync.hasPassed(5000)) { // Sync necessary monitoring info with the printer every 5sec
-                lastFailCheck.reset();
-                doSync();
-            }
+            if (shouldCheckDefect()) defectCheck();
+            if (shouldSync()) doSync();
             if (!isPrinting) break;
-            if (lastTempCheck.hasPassed(10000)) { // Thermal runaway failsafe check every 10sec
-                lastTempCheck.reset();
-                if (!thermalSafety.safe) {
-                    failureShutdown();
-                    System.exit(-1);
-                }
-            }
-            if (lastDiscordSync.hasPassed(30000)) { // Sync job info & picture with discord webhook every 5 minutes
-                lastDiscordSync.reset();
-                sendDiscordReport();
-            }
+            if (shouldCheckTemps()) tempCheck();
+            if (shouldSyncDiscord()) sendDiscordReport();
             sleep(1000);
         }
         Logger.log("Print completed, sending notification to discord and quitting.");
         sendImageToWebhook("Print complete!", "Your print has finished!", EmbedColors.GREEN);
-        //System.exit(0);
+    }
+
+
+    private void tempCheck() {
+        if (!thermalSafety.safe) {
+            Logger.error("Unsafe printer temps detected, aborting print.");
+            failureShutdown();
+            System.exit(-1);
+        }
     }
 
     private void defectCheck() {
-        Logger.log("Checking the current print for defects");
         try {
             DefectStatus status = PrintMonitorApi.getDefectStatus();
             if (status == null) {
@@ -195,7 +185,6 @@ public class PrintMonitor {
     }
 
     private boolean saveImageFromWebcam(String out) {
-        //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
         if (!webcam.getCapture(out)) {
             Logger.error("sendImageToWebhook failed to get capture from printer webcam.");
             return false;
@@ -204,7 +193,6 @@ public class PrintMonitor {
     }
 
     private boolean sendImageToWebhook(String title, String message, String color) {
-        //String out = FileUtil.getExecutionPath().resolve("capture.jpg").toString();
         String out = Paths.get(FileUtil.getExecutionPath().toString(), "capture.jpg").toString();
         if (!saveImageFromWebcam(out)) return false;
         NetworkUtil.sendImageToWebhook(webhook.getUrl(), title, message, new File(out), color);
@@ -218,7 +206,6 @@ public class PrintMonitor {
     }
 
     private void init() throws PrinterException, InterruptedException {
-        commandLock = true;
         printerInfo = client.getPrinterInfo();
         Thread.sleep(500);
         EndstopStatus es = client.getEndstopStatus();
@@ -226,7 +213,6 @@ public class PrintMonitor {
             Thread.sleep(500);
             client.setLed(true);
         }
-        commandLock = false;
     }
 
     /*private void sync() throws PrinterException, InterruptedException {
@@ -240,7 +226,6 @@ public class PrintMonitor {
     }*/
 
     private void waitForPrintJob() throws PrinterException {
-        commandLock = true;
         while (!isPrinting) {
             isPrinting = client.isPrinting();
             sleep(2500);
@@ -248,11 +233,41 @@ public class PrintMonitor {
     }
 
     private String getJobName() throws PrinterException {
-        commandLock = true;
         EndstopStatus es = client.getEndstopStatus();
         sleep(500);
-        commandLock = false;
         return es.currentFile;
+    }
+
+    private boolean shouldCheckDefect() {
+        if (lastFailCheck.hasPassed(SystemTimer.FIVE_SECS)) {
+            lastFailCheck.reset();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean shouldSync() {
+        if (lastSync.hasPassed(SystemTimer.FIVE_SECS)) {
+            lastSync.reset();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean shouldSyncDiscord() {
+        if (lastDiscordSync.hasPassed(SystemTimer.FIVE_MINS)) {
+            lastDiscordSync.reset();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean shouldCheckTemps() {
+        if (lastTempCheck.hasPassed(SystemTimer.TEN_SECS)) {
+            lastTempCheck.reset();
+            return true;
+        }
+        return false;
     }
 
 }

@@ -110,9 +110,18 @@ public class PrinterClient extends TcpPrinterClient {
 		return new PrintStatus(replay);
 	}
 
+	private EndstopStatus lastEndstopStatus = null;
 	public EndstopStatus getEndstopStatus() throws PrinterException {
 		String replay = sendCommand(PrinterCommands.CMD_ENDSTOP_INFO).trim();
-		return new EndstopStatus(replay);
+		try {
+			EndstopStatus status = new EndstopStatus(replay);
+			lastEndstopStatus = status;
+			return status;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			Logger.log("getEndstopStatus error: " + e.getMessage());
+			return lastEndstopStatus; // not sure if this is a *good* fix
+		}
+		//return new EndstopStatus(replay);
 	}
 
 	public PrintReport getPrintReport() throws PrinterException {

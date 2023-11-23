@@ -21,4 +21,10 @@ public class SystemTimer {
     public void setTime(long time) {
         this.time = time;
     }
+
+
+
+    public static final long FIVE_SECS = 5000;
+    public static final long TEN_SECS = 10000;
+    public static final long FIVE_MINS = 300000;
 }
