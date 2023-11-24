@@ -13,8 +13,8 @@ public class PrintReport {
 
     public PrintReport(EndstopStatus endstopStatus, PrintStatus printStatus, TempInfo tempInfo) {
         layerProgress = printStatus.layerProgress;
-        extruderTemp = tempInfo.extruderTemp;
-        bedTemp = tempInfo.bedTemp;
+        extruderTemp = tempInfo.extruderTemp.getFull();
+        bedTemp = tempInfo.bedTemp.getFull();
         currentFile = endstopStatus.currentFile;
     }
 
