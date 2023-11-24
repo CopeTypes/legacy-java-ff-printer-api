@@ -1,15 +1,13 @@
-package me.ghost.printapi.util;
+package me.ghost.printapi;
 
+import me.ghost.printapi.util.FileUtil;
 import slug2k.ffapi.Logger;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
 public class PrintMonitorApi {
 
@@ -28,16 +26,18 @@ public class PrintMonitorApi {
 
     /**
      * Gets the DefectStatus for the current print job
+     *
      * @return DefectStatus
-     * @see me.ghost.printapi.util.PrintMonitorApi.DefectStatus
      * @throws IOException Error with python script
+     * @see PrintMonitorApi.DefectStatus
      */
     public static DefectStatus getDefectStatus() throws IOException {
         if (!checkScriptPath()) throw new IOException("Cannot check for defect, PrintMonitor.py not found.");
         runCommand("check_defect");
         //Path resultFile = Paths.get(FileUtil.getExecutionPath().toString(), "defect.txt");
         File resultFile = new File(FileUtil.getExecutionPath(), "defect.txt");
-        if (!Files.exists(resultFile.toPath())) throw new IOException("Cannot check for defect, result file not found after executing command.");
+        if (!Files.exists(resultFile.toPath()))
+            throw new IOException("Cannot check for defect, result file not found after executing command.");
         String result = Files.readString(resultFile.toPath());
         String[] results = result.split("\n");
         try {
@@ -52,6 +52,7 @@ public class PrintMonitorApi {
     /**
      * Sets the current printer/ticket id used in the python script<br>
      * Should only be used once per session
+     *
      * @return boolean
      */
     public static boolean refreshUUIDs() {

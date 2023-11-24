@@ -25,11 +25,8 @@ public class PrinterClient extends TcpPrinterClient {
 	}
 
 	public boolean print(String filename, byte[] readAllLines) throws PrinterException {
-		//Logger.log("File: {}/{} byte", filename, readAllLines.length);
 		Logger.log("File " + filename + " size " + readAllLines.length);
-
-		Logger.log(sendCommand(PrinterCommands.CMD_PREPARE_PRINT.replaceAll("%%size%%", "" + readAllLines.length)
-				.replaceAll("%%filename%%", filename)));
+		Logger.log(sendCommand(PrinterCommands.CMD_PREPARE_PRINT.replaceAll("%%size%%", "" + readAllLines.length).replaceAll("%%filename%%", filename)));
 
 		try {
 			List<byte[]> gcode = Util.prepareRawData(readAllLines);
@@ -121,7 +118,6 @@ public class PrinterClient extends TcpPrinterClient {
 			Logger.log("getEndstopStatus error: " + e.getMessage());
 			return lastEndstopStatus; // not sure if this is a *good* fix
 		}
-		//return new EndstopStatus(replay);
 	}
 
 	public PrintReport getPrintReport() throws PrinterException {

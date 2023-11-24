@@ -18,6 +18,7 @@ public class PrinterWebcam {
 
     /**
      * Saves a snapshot from the printer's webcam
+     *
      * @param outpath Where to save the capture
      * @return boolean
      */

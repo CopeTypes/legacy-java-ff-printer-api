@@ -1,4 +1,5 @@
 package me.ghost.printapi.util;
+
 public class SystemTimer {
     private long time;
 
@@ -21,7 +22,6 @@ public class SystemTimer {
     public void setTime(long time) {
         this.time = time;
     }
-
 
 
     public static final long FIVE_SECS = 5000;

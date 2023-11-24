@@ -1,10 +1,8 @@
 package slug2k.ffapi.safety;
 
-import me.ghost.printapi.util.EmbedColors;
 import slug2k.ffapi.clients.PrinterClient;
 import slug2k.ffapi.commands.info.TempInfo;
 import slug2k.ffapi.exceptions.PrinterException;
-import me.ghost.printapi.util.WebhookUtil;
 
 /**
  * External temperature safety checks.
@@ -17,26 +15,14 @@ public class ThermalSafety {
     private final int BED_MAX = 100;
 
     private PrinterClient client;
-    private WebhookUtil whUtil;
 
     public boolean safe = true;
 
-    public ThermalSafety(PrinterClient client, String webhookUrl) {
+    public ThermalSafety(PrinterClient client) {
         this.client = client;
-        whUtil = new WebhookUtil(webhookUrl);
     }
 
-    public void run() throws PrinterException {
-        if (!areTempsSafe()) {
-            safe = false;
-            //todo would probably be safer to immediately stop the printer and/or cut off power
-            //need to see if MCode for either of those things is supported by Flashforge's firmware.
-            whUtil.sendMessage("Thermal Safety Alert", "One or more of the printer's temperature values exceeded a safe limit, the current print is being cancelled now.", EmbedColors.RED);
-            client.stopPrint();
-        }
-    }
-
-    private boolean areTempsSafe() throws PrinterException {
+    public boolean areTempsSafe() throws PrinterException {
         TempInfo temps = client.getTempInfo();
         String extruder = temps.extruderTemp.current;
         //if (extruder.contains("/")) extruder = extruder.split("/")[0].trim();

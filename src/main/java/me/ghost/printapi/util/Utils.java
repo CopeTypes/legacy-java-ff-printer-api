@@ -7,6 +7,7 @@ public class Utils {
 
     /**
      * Rounds all numbers in a string
+     *
      * @param str A string with numbers in it
      * @return The supplied string with all numbers rounded
      * @author GhostTypes

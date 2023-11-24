@@ -17,13 +17,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NetworkUtil {
 
     /**
      * Download an image from a given URL
-     * @param url URL for the image to download
+     *
+     * @param url  URL for the image to download
      * @param path Path for the image to download to
      * @return boolean
      */
@@ -44,21 +44,38 @@ public class NetworkUtil {
         }
     }
 
-    // todo impl color args / enum for it
-    public static boolean sendImageToWebhook(String webhook, String title, String message, File image, String color) {
+    private static Color getColorS(String color) {
         Color c;
         if (color.startsWith("0x")) c = hexToColor(color);
         else c = new Color(Integer.parseInt(color));
-        WebhookClient wh = WebhookClient.withUrl(webhook);
-        WebhookEmbed embed = new WebhookEmbedBuilder().setTitle(new WebhookEmbed.EmbedTitle(title, null)).setDescription(message).setImageUrl("attachment://capture.jpg").setColor(c.getRGB()).build();
-        WebhookMessage msg = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
+        return c;
+    }
+
+    private static boolean execute(WebhookClient client, WebhookMessage msg) {
         try {
-            wh.send(msg);
+            client.send(msg);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static boolean sendWebhookMessage(String webhook, String title, String message, String color) {
+        Color c = getColorS(color);
+        WebhookClient wh = WebhookClient.withUrl(webhook);
+        WebhookEmbed embed = new WebhookEmbedBuilder().setTitle(new WebhookEmbed.EmbedTitle(title, null)).setDescription(message).setColor(c.getRGB()).build();
+        WebhookMessage msg = new WebhookMessageBuilder().addEmbeds(embed).build();
+        return execute(wh, msg);
+    }
+
+    // todo impl color args / enum for it
+    public static boolean sendImageToWebhook(String webhook, String title, String message, File image, String color) {
+        Color c = getColorS(color);
+        WebhookClient wh = WebhookClient.withUrl(webhook);
+        WebhookEmbed embed = new WebhookEmbedBuilder().setTitle(new WebhookEmbed.EmbedTitle(title, null)).setDescription(message).setImageUrl("attachment://capture.jpg").setColor(c.getRGB()).build();
+        WebhookMessage msg = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
+        return execute(wh, msg);
     }
 
     public static boolean sendPrintReport(String webhook, PrintReport report, File image) {
@@ -73,13 +90,7 @@ public class NetworkUtil {
                 .setImageUrl("attachment://capture.jpg")
                 .build();
         WebhookMessage message = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
-        try {
-            wh.send(message);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        return execute(wh, message);
     }
 
     private static Color hexToColor(String hexColor) {
