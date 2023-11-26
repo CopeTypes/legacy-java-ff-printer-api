@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 public class PrintMonitorApi {
 
@@ -33,7 +34,11 @@ public class PrintMonitorApi {
      */
     public static DefectStatus getDefectStatus() throws IOException {
         if (!checkScriptPath()) throw new IOException("Cannot check for defect, PrintMonitor.py not found.");
-        runCommand("check_defect");
+        boolean ran = runCommand("check_defect");
+        if (!ran) {
+            Logger.error("getDefectStatus() command error");
+            return null;
+        }
         //Path resultFile = Paths.get(FileUtil.getExecutionPath().toString(), "defect.txt");
         File resultFile = new File(FileUtil.getExecutionPath(), "defect.txt");
         if (!Files.exists(resultFile.toPath()))
@@ -80,8 +85,15 @@ public class PrintMonitorApi {
                 String line;
                 while ((line = reader.readLine()) != null) Logger.log("[PythonAPI] " + line);
             }*/
-            int exitCode = p.waitFor();
-            return exitCode == 0;
+            try {
+                return p.waitFor(25, TimeUnit.SECONDS); //in case the python script hangs
+            } catch (InterruptedException e) {
+                Logger.error("runCommand timed out with command: " + command);
+                Logger.error("Error: " + e.getMessage());
+                return false;
+            }
+            //int exitCode = p.waitFor();
+            //return exitCode == 0;
         } catch (IOException | InterruptedException e) {
             Logger.error("PrintMonitorApi error trying to run command: " + command);
             Logger.error(e.getMessage());

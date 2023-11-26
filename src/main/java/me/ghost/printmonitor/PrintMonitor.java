@@ -42,6 +42,7 @@ public class PrintMonitor {
     SystemTimer lastFailCheck = new SystemTimer();
 
     private final ExecutorService thread = Executors.newSingleThreadExecutor();
+    private final ExecutorService defectThread = Executors.newSingleThreadExecutor();
 
     public PrintMonitor(String printerIp, String webhookUrl) throws PrinterException, InterruptedException {
         this.webhookUrl = webhookUrl;
@@ -59,20 +60,35 @@ public class PrintMonitor {
     }
 
     public void start() throws PrinterException, InterruptedException {
+        Logger.debug("start()");
         doSync();
+        Logger.log("Connected to " + printerInfo.getName() + " (fw " + printerInfo.getFirmwareVersion() + ")");
+        if (Logger.isDebug) {
+            Logger.debug("Serial Number: " + printerInfo.getSerialNumber());
+            Logger.debug("MAC Address: " + printerInfo.getSerialNumber());
+            Logger.debug("Print Dimensions: " + printerInfo.getDimensions());
+        }
         if (!isPrinting) {
             Logger.log("Waiting for print job to start...");
             waitForPrintJob();
         }
         sendImageToWebhook("Monitoring " + printerInfo.getName(), "Job: " + getJobName(), EmbedColors.BLUE);
+        Logger.debug("Generating new PrinterId and TickedId");
         PrintMonitorApi.refreshUUIDs();
         sleep(500);
         thread.execute(this::checkThread);
+        defectThread.execute(this::checkDefectThread);
+    }
+
+    private void checkDefectThread() {
+        Logger.debug("checkDefectThread()");
+        while (isPrinting) { if (shouldCheckDefect()) defectCheck(); }
     }
 
     private void checkThread() {
+        Logger.debug("checkThread()");
         while (isPrinting) {
-            if (shouldCheckDefect()) defectCheck();
+            //if (shouldCheckDefect()) defectCheck();
             if (shouldSync()) doSync();
             if (!isPrinting) break;
             if (shouldCheckTemps()) tempCheck();
@@ -81,10 +97,14 @@ public class PrintMonitor {
         }
         Logger.log("Print completed, sending notification to discord and quitting.");
         sendImageToWebhook("Print complete!", "Your print has finished!", EmbedColors.GREEN);
+        defectThread.shutdownNow();
+        //todo figure out why it's not exiting on it's own after
+        System.exit(0);
     }
 
 
     private void tempCheck() {
+        Logger.debug("tempCheck()");
         try {
             if (!thermalSafety.areTempsSafe()) thermalShutdown();
         } catch (PrinterException e) {
@@ -107,10 +127,12 @@ public class PrintMonitor {
     }
     
     private void defectCheck() {
+        Logger.debug("defectCheck()");
         try {
             DefectStatus status = PrintMonitorApi.getDefectStatus();
             if (status == null) {
                 checkFails++; // failsafe triggered after 5 failed defect checks in a row
+                Logger.debug("Got null DefectStatus, checkFails is: " + checkFails);
                 if (checkFails >= 5) {
                     sendMessage("Detection Failure", "There have been multiple failed defect checks in a short period of time, aborting the print.", EmbedColors.RED);
                     failureShutdown();
@@ -119,11 +141,13 @@ public class PrintMonitor {
             }
             if (checkFails > 0) checkFails--;
             if (status.defect) {
+                Logger.error("Defect detected!");
                 if (!sendImageToWebhook("Print Defect Detected", "Defect detected in the last print check", EmbedColors.RED)) {
                     Logger.error("Defect detected, unable to get webcam capture.");
                     sendMessage("Print Defect Detected", "There was a defect detected in the last print check, but capturing the webcam failed.", EmbedColors.RED);
                 }
                 if (status.score >= 0.6F) {
+                    Logger.error("Failure detected!");
                     if (!sendImageToWebhook("Print Failure Detected", "The current print has failed, aborting now", EmbedColors.RED)) {
                         Logger.error("Failure detected, unable to get webcam capture.");
                         sendMessage("Print Failure Detected", "Aborting print now (unable to capture webcam)", EmbedColors.RED);
@@ -137,6 +161,7 @@ public class PrintMonitor {
     }
 
     private void doSync() {
+        Logger.debug("doSync()");
         try {
             isPrinting = client.isPrinting();
             //sync()
@@ -155,6 +180,7 @@ public class PrintMonitor {
     }
 
     private void sendDiscordReport() {
+        Logger.debug("sendDiscordReport()");
         try {
             String out = Paths.get(FileUtil.getExecutionPath().toString(), "capture.jpg").toString();
             if (!saveImageFromWebcam(out)) {
@@ -176,8 +202,11 @@ public class PrintMonitor {
     }
 
     private void failureShutdown() {
+        Logger.debug("failureShutdown()");
         try {
+            Logger.debug("Waiting for print to stop");
             client.stopPrint();
+            Logger.debug("Print stopped");
             sendMessage("Print stopped", "Print aborted due to failure", EmbedColors.GREEN);
         } catch (PrinterException e) { // this *should* never happen, but it's better safe than sorry
             Logger.error("Error while trying to abort print failure: " + e);
@@ -188,16 +217,11 @@ public class PrintMonitor {
     }
 
     private void shutdownFailsafe() {
+        Logger.debug("shutdownFailsafe()");
         boolean stopped = false;
         while (!stopped) {
-            try {
-                stopped = client.isPrinting();
-            } catch (PrinterException ignored) {
-            }
-            try {
-                client.stopPrint();
-            } catch (PrinterException ignored) {
-            }
+            try { stopped = client.isPrinting(); } catch (PrinterException ignored) {}
+            try { client.stopPrint(); } catch (PrinterException ignored) {}
         }
     }
 
@@ -217,11 +241,7 @@ public class PrintMonitor {
     }
 
     private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try { Thread.sleep(millis); } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void init() throws PrinterException, InterruptedException {
@@ -233,16 +253,6 @@ public class PrintMonitor {
             client.setLed(true);
         }
     }
-
-    /*private void sync() throws PrinterException, InterruptedException {
-        syncing = true;
-        commandLock = true;
-        Thread.sleep(500);
-        isPrinting = client.isPrinting();
-        Thread.sleep(500);
-        commandLock = false;
-        syncing = false;
-    }*/
 
     private void waitForPrintJob() throws PrinterException {
         while (!isPrinting) {
