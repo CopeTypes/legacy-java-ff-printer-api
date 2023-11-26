@@ -1,5 +1,9 @@
 package slug2k.ffapi.commands.extra;
 
+/**
+ * Class for handling the current layer progress
+ * @see slug2k.ffapi.commands.status.PrintStatus
+ */
 public class LayerProgress {
     public int currentLayer, totalLayers;
     public double progress;

@@ -4,6 +4,9 @@ import slug2k.ffapi.commands.info.TempInfo;
 import slug2k.ffapi.commands.status.EndstopStatus;
 import slug2k.ffapi.commands.status.PrintStatus;
 
+/**
+ * Class for handling all relevant data about the current print
+ */
 public class PrintReport {
     public LayerProgress layerProgress;
     public String extruderTemp;

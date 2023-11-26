@@ -6,6 +6,10 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Class for file interactions
+ * @author GhostTypes
+ */
 public class FileUtil {
 
     /**

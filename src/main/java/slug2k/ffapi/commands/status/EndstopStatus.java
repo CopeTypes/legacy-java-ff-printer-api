@@ -5,8 +5,8 @@ import slug2k.ffapi.enums.MachineStatus;
 import slug2k.ffapi.enums.MoveMode;
 
 /**
- * @author GhostTypes
  * Gets the current MachineStatus, MoveMode, Led state, and current file name (if printing)
+ * @author GhostTypes
  */
 public class EndstopStatus {
 
@@ -20,7 +20,7 @@ public class EndstopStatus {
     public String currentFile;
 
     public EndstopStatus(String replay) {
-        //Logger.log("PrinterEndstopStatus raw replay:\n" + replay);
+        Logger.debug("PrinterEndstopStatus replay:\n" + replay);
         String[] data = replay.split("\n");
         //todo this threw ArrayIndexOutOfBounds (2 out of bounds for length 1) and not sure why
         //made a temporary fix in PrinterClient but should really figure out why that happens/happened
@@ -30,17 +30,9 @@ public class EndstopStatus {
         else if (machineStatus.contains("READY")) this.machineStatus = MachineStatus.READY;
         else {
             Logger.log("Encountered unknown MachineStatus: " + machineStatus);
+            this.machineStatus = MachineStatus.DEFAULT;
         }
         String moveM = data[3].replace("MoveMode: ", "").trim();
-        /*switch (moveM) {
-            case "MOVING" -> this.moveMode = MoveMode.MOVING;
-            case "PAUSED" -> this.moveMode = MoveMode.PAUSED;
-            //todo document other modes, there's like 2 or 3 more
-            default -> {
-                Logger.log("Encountered MachineStatus not currently in enum: " + moveM);
-                this.moveMode = MoveMode.DEFAULT;
-            }
-        }*/
         if (moveM.contains("MOVING")) this.moveMode = MoveMode.MOVING;
         else if (moveM.contains("PAUSED")) this.moveMode = MoveMode.PAUSED;
         else if (moveM.contains("READY")) this.moveMode = MoveMode.READY;
@@ -48,7 +40,6 @@ public class EndstopStatus {
             Logger.log("Encountered unknown MoveMode: " + moveM);
             this.moveMode = MoveMode.DEFAULT;
         }
-
         //status = data[4] useless
         int led = Integer.parseInt(data[5].replace("LED: ", "").trim());
         ledEnabled = led == 1;

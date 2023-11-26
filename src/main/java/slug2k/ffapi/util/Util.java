@@ -12,29 +12,25 @@ import org.apache.commons.codec.binary.Hex;
 
 import slug2k.ffapi.exceptions.PrinterTransferException;
 
+/**
+ * Utils mainly used for sending print files to the printer
+ * @author Slugger2k, updated by GhostTypes
+ */
 public class Util {
 	
 	// Packet-length = 4112 = 4096 + 16
-	private static final int PACKETSIZE = 4096;
+	private static final int PACKET_SIZE = 4096;
 
 	public static byte[] concatenateArrays(byte[] a, byte[] b) {
 		byte[] concat = new byte[a.length + b.length];
-
 		int i = 0;
-		for (byte aa : a) {
-			concat[i] = aa;
-			i++;
-		}
-
-		for (byte bb : b) {
-			concat[i] = bb;
-			i++;
-		}
+		for (byte aa : a) { concat[i] = aa; i++; }
+		for (byte bb : b) { concat[i] = bb; i++; }
 		return concat;
 	}
 	
 	/**
-	 * generate the header of each packageBundle(4096) with a counter, a CRC32 checksum and packetsize
+	 * Generate the header of each packageBundle(4096) with a counter, a CRC32 checksum and packet size
 	 * 
 	 * @param packetBundleCounter
 	 * @param crc32Checksum
@@ -96,15 +92,15 @@ public class Util {
 	public static List<byte[]> prepareRawData(byte[] readAllLines) throws PrinterTransferException {
 		List<byte[]> gcode = new ArrayList<>();
 
-		byte[] array = null;
+		byte[] array = new byte[PACKET_SIZE];
 		int i = 0;
 		int packetCounter = 0;
 		
 		for (byte b : readAllLines) {
-			if (i == 0) array = new byte[PACKETSIZE];
+			//if (i == 0) array = new byte[PACKET_SIZE];
 			array[i] = b;
 			i++;
-			if (i == PACKETSIZE) {
+			if (i == PACKET_SIZE) {
 				String crc32Checksum = calcChecksum(array);
 				array = Util.concatenateArrays(generatePrintPrePayload(packetCounter, i, crc32Checksum, false), array);
 				packetCounter++;

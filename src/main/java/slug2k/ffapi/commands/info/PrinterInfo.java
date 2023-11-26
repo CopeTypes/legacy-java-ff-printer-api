@@ -1,6 +1,10 @@
 package slug2k.ffapi.commands.info;
 
-
+/**
+ * Class for handling printer specs
+ */
+// The original class was modified to work properly with the Adventurer 5 series, see https://github.com/Slugger2k/FlashForgePrinterApi/blob/main/src/main/java/de/slg/ddnss/printertool/clients/PrinterInfo.java
+// The main difference is how temperature data is serialized
 public class PrinterInfo {
 	
 	private String name;
@@ -44,30 +48,56 @@ public class PrinterInfo {
 	private void setNickname(String nickname) {
 		this.nickname = nickname;
 	}
+
+	/**
+	 * Gets the current firmware version of the printer
+	 * @return String
+	 */
 	public String getFirmwareVersion() {
 		return firmwareVersion;
 	}
 	private void setFirmwareVersion(String firmwareVersion) {
 		this.firmwareVersion = firmwareVersion;
 	}
+
+	/**
+	 * Gets the serial number of the printer
+	 * @return String
+	 */
 	public String getSerialNumber() {
 		return serialNumber;
 	}
 	private void setSerialNumber(String seriesNr) {
 		this.serialNumber = seriesNr;
 	}
+
+	/**
+	 * Gets the print dimensions of the printer
+	 * @return String
+	 */
 	public String getDimensions() {
 		return dimensions;
 	}
 	private void setDimensions(String dimensions) {
 		this.dimensions = dimensions;
 	}
+
+	/**
+	 * Gets the tool count of the printer<br>
+	 * This will always be 1 except the Creator Pro series (and other IDEX)
+	 * @return Integer
+	 */
 	public int getToolCount() {
 		return toolCount;
 	}
 	private void setToolCount(int toolCount) {
 		this.toolCount = toolCount;
 	}
+
+	/**
+	 * Gets the MAC Address of the printer
+	 * @return String
+	 */
 	public String getMac() {
 		return mac;
 	}

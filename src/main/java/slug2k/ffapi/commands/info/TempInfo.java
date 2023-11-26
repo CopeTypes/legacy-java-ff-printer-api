@@ -1,18 +1,18 @@
 package slug2k.ffapi.commands.info;
 
-
 import me.ghost.printapi.util.Utils;
+import slug2k.ffapi.Logger;
 
+/**
+ * Class for handling the printer's temps
+ */
 public class TempInfo {
-
-    //public String extruderTemp;
-    //public String bedTemp;
 
     public TempData extruderTemp;
     public TempData bedTemp;
 
     public TempInfo(String replay) {
-        //Logger.log("Raw replay for PrinterTempInfo:\n" + replay);
+        Logger.debug("TempInfo replay:\n" + replay);
         String[] data = replay.split("\n");
         String[] tempData = data[1].split(" ");
         String extruderd = tempData[0].replace("T0:", "").replace("/0.0", "");
@@ -25,6 +25,10 @@ public class TempInfo {
         public String current = "";
         public String set = "";
 
+        /**
+         * Get extruder/bed temps from a M105 command response
+         * @param data M105 command response
+         */
         public TempData(String data) {
             if (data.contains("/")) { // replay has current/set temps
                 String[] splitTemps = data.split("/");
@@ -39,13 +43,18 @@ public class TempInfo {
         /**
          * Parses the last part of a temp data string into 'proper' format
          * @param data a temp data string like "123.45/678.90"
-         * @return
+         * @return String
          */
         private String parseTdata(String data) {
             if (data.contains(".")) data = data.split("\\.")[0].trim();
             return Utils.roundString(data);
         }
 
+        /**
+         * Gets the 'full' temp (current/set)<br>
+         * Returns only the temp if there's no set one
+         * @return String
+         */
         public String getFull() {
             if (set == null) return current;
             return current + "/" + set;

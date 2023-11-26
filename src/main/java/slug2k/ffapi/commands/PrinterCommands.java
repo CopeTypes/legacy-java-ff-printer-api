@@ -1,5 +1,9 @@
 package slug2k.ffapi.commands;
 
+/**
+ * Class for storing printer commands
+ * @author Slugger2k, updated by GhostTypes
+ */
 public class PrinterCommands {
 
 	/**
@@ -24,8 +28,14 @@ public class PrinterCommands {
 	 * Gets the extruder & bed temp
 	 */
 	public static final String CMD_TEMP = "~M105";
+	/**
+	 * Turns the LED lights on
+	 */
 	public static final String CMD_LED_ON = "~M146 r255 g255 b255 F0";
 
+	/**
+	 * Turns the LED lights off
+	 */
 	public static final String CMD_LED_OFF = "~M146 r0 g0 b0 F0";
 
 	/**
