@@ -11,6 +11,10 @@ public class TempInfo {
     public TempData extruderTemp;
     public TempData bedTemp;
 
+    /**
+     * Creates a TempInfo instance from a M105 command replay
+     * @param replay M105 command replay
+     */
     public TempInfo(String replay) {
         Logger.debug("TempInfo replay:\n" + replay);
         String[] data = replay.split("\n");

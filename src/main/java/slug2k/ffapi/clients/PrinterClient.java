@@ -16,10 +16,16 @@ import slug2k.ffapi.commands.PrinterCommands;
 
 import java.util.List;
 
-
+/**
+ * Client for communicating with FlashForge printers
+ * @author Slugger2k, updated by GhostTypes
+ */
 public class PrinterClient extends TcpPrinterClient {
 
-	//Credit to the original author for this stuff
+	/**
+	 * Creates a new PrinterClient
+	 * @param hostname The printer's ip
+	 */
 	public PrinterClient(String hostname) {
 		super(hostname);
 	}
@@ -43,13 +49,11 @@ public class PrinterClient extends TcpPrinterClient {
 
 	public boolean setLed(boolean on) throws PrinterException {
 		String replay = sendCommand(on ? PrinterCommands.CMD_LED_ON : PrinterCommands.CMD_LED_OFF);
-		Logger.log(replay);
 		return replay.contentEquals("CMD M146 Received.\nok");
 	}
 
 	public PrinterInfo getPrinterInfo() throws PrinterException {
 		String replay = sendCommand(PrinterCommands.CMD_INFO_STATUS).trim();
-		//Logger.log(replay);
 		return new PrinterInfo(replay);
 	}
 
@@ -80,7 +84,6 @@ public class PrinterClient extends TcpPrinterClient {
 	public boolean isPrinting() throws PrinterException {
 		return getMachineStatus() == MachineStatus.BUILDING_FROM_SD;
 	}
-
 
 	public MachineStatus getMachineStatus() throws PrinterException {
 		EndstopStatus endstopStatus = getEndstopStatus();

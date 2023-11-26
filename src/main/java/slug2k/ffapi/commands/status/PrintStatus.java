@@ -16,6 +16,10 @@ public class PrintStatus {
 
     public LayerProgress layerProgress;
 
+    /**
+     * Creates a PrintStatus instance from an M27 command replay
+     * @param replay M27 command replay
+     */
     public PrintStatus(String replay) {
         Logger.debug("PrintStatus replay:\n" + replay);
         String[] data = replay.split("\n");

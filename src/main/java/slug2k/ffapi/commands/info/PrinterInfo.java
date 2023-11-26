@@ -1,5 +1,7 @@
 package slug2k.ffapi.commands.info;
 
+import slug2k.ffapi.Logger;
+
 /**
  * Class for handling printer specs
  */
@@ -17,10 +19,12 @@ public class PrinterInfo {
 
 	/**
 	 *
-	 * Gets various information about the printer<br>
-	 * Made by Slugger2k, Updated by GhostTypes 11/12/23
+	 * Creates a PrinterInfo instance from a M115 command replay<br>
+	 * @param replay The M115 command replay
+	 * @author Slugger2k, upated by GhostTypes
 	 */
 	public PrinterInfo(String replay) {
+		Logger.debug("PrinterInfo replay:\n" + replay);
 		String[] split = replay.split("\\n");
 		setName(split[1].split(":")[1].trim());
 		setNickname(split[2].split(":")[1].trim());

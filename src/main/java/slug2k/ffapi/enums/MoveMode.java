@@ -1,21 +1,26 @@
 package slug2k.ffapi.enums;
 
 public enum MoveMode {
-    //todo there's like 2-3 more move status states we need to document
-    //one might be ready?
-
     /**
-     * The printer is currently moving.<br>
-     * Check MachineStatus, PrintStatus, or EndstopStatus for more info
+     * The printer is currently busy<br>
+     * Check MachineStatus, PrintStatus, or EndstopStatus for more info<br>
+     * Some commands don't work in this state
      */
     MOVING,
 
     /**
-     * The printer is currently paused.<br>
-     * Check MachineStatus, PrintStatus, or EndstopStatus for more info
+     * An operation is currently being performed device-side<br>
+     * No commands will work in this state
      */
     PAUSED,
+    /**
+     * The printer is idle and ready to start a job/accept any command
+     */
     READY,
+
+    /**
+     * The printer is in an unknown state, this should never happen
+     */
     DEFAULT
 
 }

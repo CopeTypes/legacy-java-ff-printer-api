@@ -14,5 +14,14 @@ public enum MachineStatus {
      */
     READY,
 
+    /**
+     * An operation is currently being performed device-side<br>
+     * No commands will work in this state
+     */
+    PAUSED,
+
+    /**
+     * The printer is in an unknown state, this should never happen
+     */
     DEFAULT
 }
