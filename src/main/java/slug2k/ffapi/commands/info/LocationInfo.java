@@ -25,4 +25,9 @@ public class LocationInfo {
     public String toString() {
         return "X: " + x + " Y: " + y + " Z: " + z;
     }
+
+    //todo checking if axes are homed by using EndstopStatus.Endstop
+
+    // not sure how to implement checking if Z is homed, but X & Y are homed if they're equal to X & Y max
+    // z home seems to be 220 on the 5M series
 }

@@ -18,6 +18,8 @@ public enum MachineStatus {
      * An operation is currently being performed device-side<br>
      * No commands will work in this state
      */
+    // I haven't encountered this on the 5M series, but older printers may use this in place of
+    // BUILDING_COMPLETED
     PAUSED,
 
     /**

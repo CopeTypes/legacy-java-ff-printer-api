@@ -4,6 +4,9 @@ import slug2k.ffapi.Logger;
 import slug2k.ffapi.enums.MachineStatus;
 import slug2k.ffapi.enums.MoveMode;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Gets the current MachineStatus, MoveMode, Led state, and current file name (if printing)
  * @author GhostTypes
@@ -63,24 +66,31 @@ public class EndstopStatus {
          */
         public Status(String data) {
             Logger.debug("Status(EndstopStatus) data: " + data);
-            try {
-                String[] sd = data.replace("Status: ", "").split(" ");
-                S = Integer.parseInt(sd[0].replace("S:", "").trim());
-                L = Integer.parseInt(sd[1].replace("L:", "").trim());
-                J = Integer.parseInt(sd[1].replace("J:", "").trim());
-                F = Integer.parseInt(sd[1].replace("F:", "").trim());
-            } catch (ArrayIndexOutOfBoundsException e) {
-                Logger.error("Error parsing status data (EndstopStatus): " + e.getMessage());
-                S = -1;
-                L = -1;
-                J = -1;
-                F = -1;
-            }
+            S = extractValue(data, "S");
+            L = extractValue(data, "L");
+            J = extractValue(data, "J");
+            F = extractValue(data, "F");
+        }
+
+        /**
+         * Extracts the value of an individual item in a status string
+         * @param input A string like:<br>Status: S:1 L:0 J:0 F:0
+         * @param key Which part of the status string to extract (ex: "S")
+         * @return
+         */
+        private int extractValue(String input, String key) {
+            String pattern = key + ":(\\d+)";
+            Pattern regex = Pattern.compile(pattern);
+            Matcher matcher = regex.matcher(input);
+            if (matcher.find()) return Integer.parseInt(matcher.group(1));
+            else return -1;
         }
     }
 
     public static class Endstop {
-        public boolean Xmax, Ymax, Zmax;
+        public int Xmax, Ymax, Zmin; // these seem to just refer to the actual max for the axes
+        // some other thing online said these were used to check home positions for an axes, but that's probably for older printers
+        // on the 5M series, X & Y max are always 100, and Z-min is always 0
 
         /**
          * Creates an Endstop instance from M119 data<br>
@@ -89,42 +99,23 @@ public class EndstopStatus {
          */
         public Endstop(String data) {
             Logger.debug("Endstop(EndstopStatus) data: " + data);
-            try {
-                String[] ed = data.replace("Endstop: ", "").split(" ");
-                int xm = Integer.parseInt(ed[0].replace("X-max", "").trim());
-                int ym = Integer.parseInt(ed[0].replace("Y-max", "").trim());
-                int zm = Integer.parseInt(ed[0].replace("Z-max", "").trim());
-                //todo need to verify what the values actually are when everything is homed
-                Xmax = xm == 1;
-                Ymax = ym == 1;
-                Zmax = zm == 1;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                Logger.error("Errpor parsing Endstop data (EndstopStatus): " + e.getMessage());
-                Xmax = false;
-                Ymax = false;
-                Zmax = false;
-            }
+            Xmax = getValue(data, "X-max");
+            Ymax = getValue(data, "Y-max");
+            Zmin = getValue(data, "Z-min");
+        }
+
+        /**
+         * Extracts the max (min for z) for a given axes
+         * @param input A string like:<br>Endstop: X-max: 110 Y-max: 110 Z-min: 0
+         * @param key Which axes to extract (ex: "X-max")
+         * @return Integer
+         */
+        private int getValue(String input, String key) {
+            String pattern = key + ": (\\d+)";
+            Pattern regex = Pattern.compile(pattern);
+            Matcher matcher = regex.matcher(input);
+            if (matcher.find()) return Integer.parseInt(matcher.group(1));
+            else return -1;
         }
     }
-
-    /**
-     * Checks if the X Axis is at it's home position
-     * @return boolean
-     */
-    public boolean isXHome() { return endstop.Xmax; }
-    /**
-     * Checks if the Y Axis is at it's home position
-     * @return boolean
-     */
-    public boolean isYHome() { return endstop.Ymax; }
-    /**
-     * Checks if the Z Axis is at it's home position
-     * @return boolean
-     */
-    public boolean isZHome() { return endstop.Zmax; }
-    /**
-     * Checks if all the axis are homed
-     * @return boolean
-     */
-    public boolean isHome() { return isXHome() && isYHome() && isZHome();}
 }
