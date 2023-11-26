@@ -19,6 +19,12 @@ import java.util.concurrent.Executors;
 
 import static me.ghost.printapi.PrintMonitorApi.DefectStatus;
 
+/**
+ * Class for monitoring prints<br>
+ * Sends automatic progress updates to discord<br>
+ * Automatic defect detection & alerts<br>
+ * Automatic print cancellation on failure & alerts<br>
+ */
 public class PrintMonitor {
     private String webhookUrl;
     private PrinterClient client;
@@ -44,6 +50,13 @@ public class PrintMonitor {
     private final ExecutorService thread = Executors.newSingleThreadExecutor();
     private final ExecutorService defectThread = Executors.newSingleThreadExecutor();
 
+    /**
+     * Creates a new PrintMonitor
+     * @param printerIp The ip of the printer
+     * @param webhookUrl The webhook url for notifications etc.
+     * @throws PrinterException Communication error with the printer
+     * @throws InterruptedException Failed to sleep between action(s)
+     */
     public PrintMonitor(String printerIp, String webhookUrl) throws PrinterException, InterruptedException {
         this.webhookUrl = webhookUrl;
         client = new PrinterClient(printerIp);
@@ -59,6 +72,11 @@ public class PrintMonitor {
         init();
     }
 
+    /**
+     * Starts the print monitor, which will automatically exit when the print completes
+     * @throws PrinterException Communication error with the printer
+     * @throws InterruptedException Failed to sleep between action(s)
+     */
     public void start() throws PrinterException, InterruptedException {
         Logger.debug("start()");
         doSync();
@@ -80,11 +98,17 @@ public class PrintMonitor {
         defectThread.execute(this::checkDefectThread);
     }
 
+    /**
+     * Thread for checking the current print for defects/failure(s)
+     */
     private void checkDefectThread() {
         Logger.debug("checkDefectThread()");
         while (isPrinting) { if (shouldCheckDefect()) defectCheck(); }
     }
 
+    /**
+     * Thread for syncing printer info, checking temps, and sending progress updates to Discord
+     */
     private void checkThread() {
         Logger.debug("checkThread()");
         while (isPrinting) {
@@ -97,12 +121,17 @@ public class PrintMonitor {
         }
         Logger.log("Print completed, sending notification to discord and quitting.");
         sendImageToWebhook("Print complete!", "Your print has finished!", EmbedColors.GREEN);
+        sleep(1000);
         defectThread.shutdownNow();
+        sleep(1000);
         //todo figure out why it's not exiting on it's own after
         System.exit(0);
     }
 
-
+    /**
+     * Checks if the printers current temps are within a safe range<br>
+     * Automatically cancels the current print if not
+     */
     private void tempCheck() {
         Logger.debug("tempCheck()");
         try {
@@ -125,7 +154,10 @@ public class PrintMonitor {
         //todo handle sending failure
         NetworkUtil.sendWebhookMessage(webhookUrl, title, message, color);
     }
-    
+
+    /**
+     * Check the current print for defects/failure(s)
+     */
     private void defectCheck() {
         Logger.debug("defectCheck()");
         try {
@@ -201,6 +233,9 @@ public class PrintMonitor {
         System.exit(-1);
     }
 
+    /**
+     * Used to cancel the current print if an error occurs
+     */
     private void failureShutdown() {
         Logger.debug("failureShutdown()");
         try {
@@ -216,6 +251,9 @@ public class PrintMonitor {
         }
     }
 
+    /**
+     * Used as a failsafe if failureShutdown() fails to stop the current print
+     */
     private void shutdownFailsafe() {
         Logger.debug("shutdownFailsafe()");
         boolean stopped = false;
@@ -244,6 +282,11 @@ public class PrintMonitor {
         try { Thread.sleep(millis); } catch (Exception e) { e.printStackTrace(); }
     }
 
+    /**
+     * Gets the printer ready for monitoring
+     * @throws PrinterException Communication error with the printer
+     * @throws InterruptedException Failed to sleep between action(s)
+     */
     private void init() throws PrinterException, InterruptedException {
         printerInfo = client.getPrinterInfo();
         Thread.sleep(500);
@@ -254,6 +297,10 @@ public class PrintMonitor {
         }
     }
 
+    /**
+     * Waits until the printer's job has started (checks every 2.5s)
+     * @throws PrinterException Communication error with the printer
+     */
     private void waitForPrintJob() throws PrinterException {
         while (!isPrinting) {
             isPrinting = client.isPrinting();
@@ -261,6 +308,11 @@ public class PrintMonitor {
         }
     }
 
+    /**
+     * Gets the file name of the current print job
+     * @return The file name of the current print job
+     * @throws PrinterException Communication error with the printer
+     */
     private String getJobName() throws PrinterException {
         EndstopStatus es = client.getEndstopStatus();
         sleep(500);

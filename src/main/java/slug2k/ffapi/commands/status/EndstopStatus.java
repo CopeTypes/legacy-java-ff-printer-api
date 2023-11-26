@@ -52,7 +52,7 @@ public class EndstopStatus {
         //status = data[4] useless
         int led = Integer.parseInt(data[5].replace("LED: ", "").trim());
         ledEnabled = led == 1;
-        currentFile = data[6].replace("CurrentFile: ", "").stripTrailing();
+        currentFile = data[6].replace("CurrentFile: ", "").replace(".gx", "").replace(".gcode", "").stripTrailing();
         if (currentFile.replace(" ", "").isEmpty()) currentFile = "None";
     }
 }

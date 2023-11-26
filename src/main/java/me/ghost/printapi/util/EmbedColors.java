@@ -1,5 +1,9 @@
 package me.ghost.printapi.util;
 
+/**
+ * Class containing colors for Discord Embeds
+ * @author GhostTypes
+ */
 public class EmbedColors {
 
     public static final String WHITE = "0xFFFFFF";

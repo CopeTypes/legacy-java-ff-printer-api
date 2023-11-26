@@ -18,6 +18,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+/**
+ * Class for handling network interactions
+ * @author GhostTypes
+ */
 public class NetworkUtil {
 
     /**
@@ -44,6 +48,11 @@ public class NetworkUtil {
         }
     }
 
+    /**
+     * Convert a color string to a Color instance
+     * @param color Color as a string (hex, etc.)
+     * @return Color
+     */
     private static Color getColorS(String color) {
         Color c;
         if (color.startsWith("0x")) c = hexToColor(color);
@@ -51,6 +60,12 @@ public class NetworkUtil {
         return c;
     }
 
+    /**
+     * Executes (sends) the supplied WebhookMessage using the supplied WebhookClient
+     * @param client WebhookClient instance
+     * @param msg WebhookMessage instance
+     * @return boolean
+     */
     private static boolean execute(WebhookClient client, WebhookMessage msg) {
         try {
             client.send(msg);
@@ -61,6 +76,14 @@ public class NetworkUtil {
         }
     }
 
+    /**
+     * Sends an embed message to the supplied webhook url
+     * @param webhook The target webhook url
+     * @param title Title of the embed
+     * @param message Description (message) of the embed
+     * @param color Color for the embed
+     * @return boolean
+     */
     public static boolean sendWebhookMessage(String webhook, String title, String message, String color) {
         Color c = getColorS(color);
         WebhookClient wh = WebhookClient.withUrl(webhook);
@@ -69,7 +92,15 @@ public class NetworkUtil {
         return execute(wh, msg);
     }
 
-    // todo impl color args / enum for it
+    /**
+     * Sends an embed message to the supplied webhook url, with an image
+     * @param webhook The target webhook url
+     * @param title Title of the embed
+     * @param message Description (message) of the embed
+     * @param image (File) The image to upload
+     * @param color Color for the embed
+     * @return boolean
+     */
     public static boolean sendImageToWebhook(String webhook, String title, String message, File image, String color) {
         Color c = getColorS(color);
         WebhookClient wh = WebhookClient.withUrl(webhook);
@@ -78,6 +109,13 @@ public class NetworkUtil {
         return execute(wh, msg);
     }
 
+    /**
+     * Sends a PrintReport to the supplied webhook url, with an image of the current progress
+     * @param webhook The target webhook url
+     * @param report PrintReport instance (from PrinterClient)
+     * @param image (File) The image to upload
+     * @return
+     */
     public static boolean sendPrintReport(String webhook, PrintReport report, File image) {
         WebhookClient wh = WebhookClient.withUrl(webhook);
         WebhookEmbed embed = new WebhookEmbedBuilder()
@@ -93,6 +131,11 @@ public class NetworkUtil {
         return execute(wh, message);
     }
 
+    /**
+     * Converts a hex color string to a Color instance
+     * @param hexColor Hex color string
+     * @return Color
+     */
     private static Color hexToColor(String hexColor) {
         if (hexColor.startsWith("0x")) hexColor = hexColor.substring(2);
         long colorValue = Long.parseLong(hexColor, 16);
