@@ -71,7 +71,7 @@ public class Util {
 
 	public static void addChecksum(String crc32Checksum, byte[] printPrePayload) throws PrinterTransferException {
 		try {
-			byte[] decodeHex = null;
+			byte[] decodeHex;
 			decodeHex = Hex.decodeHex("00000000".substring(crc32Checksum.length()) + crc32Checksum);
 			printPrePayload[15] = decodeHex[3];
 			printPrePayload[14] = decodeHex[2];
@@ -97,7 +97,6 @@ public class Util {
 		int packetCounter = 0;
 		
 		for (byte b : readAllLines) {
-			//if (i == 0) array = new byte[PACKET_SIZE];
 			array[i] = b;
 			i++;
 			if (i == PACKET_SIZE) {

@@ -23,6 +23,8 @@ public class TempInfo {
         String bedd = tempData[2].replace("B:", "").replace("/0.0", "");
         extruderTemp = new TempData(extruderd);
         bedTemp = new TempData(bedd);
+        Logger.debug("Extruder temp is " + extruderTemp.getFull());
+        Logger.debug("Bed temp is " + bedTemp.getFull());
     }
 
     public class TempData {

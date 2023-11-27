@@ -36,6 +36,7 @@ public class EndstopStatus {
         String machineStatus = data[2].replace("MachineStatus: ", "").trim();
         if (machineStatus.contains("BUILDING_FROM_SD")) this.machineStatus = MachineStatus.BUILDING_FROM_SD;
         else if (machineStatus.contains("BUILDING_COMPLETED")) this.machineStatus = MachineStatus.BUILDING_COMPLETED;
+        else if (machineStatus.contains("PAUSED")) this.machineStatus = MachineStatus.PAUSED; // this doesn't appear to be used on the 5m series...
         else if (machineStatus.contains("READY")) this.machineStatus = MachineStatus.READY;
         else {
             Logger.log("Encountered unknown MachineStatus: " + machineStatus);
@@ -50,14 +51,16 @@ public class EndstopStatus {
             this.moveMode = MoveMode.DEFAULT;
         }
         status = new Status(data[4]);
-        int led = Integer.parseInt(data[5].replace("LED: ", "").trim());
-        ledEnabled = led == 1;
+        ledEnabled = Integer.parseInt(data[5].replace("LED: ", "").trim()) == 1;
         currentFile = data[6].replace("CurrentFile: ", "").replace(".gx", "").replace(".gcode", "").stripTrailing();
         if (currentFile.replace(" ", "").isEmpty()) currentFile = "None";
     }
 
+    /**
+     * Class for status data
+     */
     public static class Status {
-        public int S, L, J, F;
+        public int S, L, J, F; // todo find out what these represent
 
         /**
          * Creates a Status instance from M119 data<br>
@@ -65,7 +68,7 @@ public class EndstopStatus {
          * @param data String from M119 command containing status data
          */
         public Status(String data) {
-            Logger.debug("Status(EndstopStatus) data: " + data);
+            //Logger.debug("Status(EndstopStatus) data: " + data);
             S = extractValue(data, "S");
             L = extractValue(data, "L");
             J = extractValue(data, "J");
@@ -87,6 +90,9 @@ public class EndstopStatus {
         }
     }
 
+    /**
+     * Class for Endstop data (X-max, Y-max, X-min)
+     */
     public static class Endstop {
         public int Xmax, Ymax, Zmin; // these seem to just refer to the actual max for the axes
         // some other thing online said these were used to check home positions for an axes, but that's probably for older printers
@@ -98,7 +104,7 @@ public class EndstopStatus {
          * @param data String from M119 command containing endstop data
          */
         public Endstop(String data) {
-            Logger.debug("Endstop(EndstopStatus) data: " + data);
+            //Logger.debug("Endstop(EndstopStatus) data: " + data);
             Xmax = getValue(data, "X-max");
             Ymax = getValue(data, "Y-max");
             Zmin = getValue(data, "Z-min");

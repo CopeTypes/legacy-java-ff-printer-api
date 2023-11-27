@@ -8,6 +8,7 @@ import slug2k.ffapi.clients.PrinterClient;
 import slug2k.ffapi.commands.extra.PrintReport;
 import slug2k.ffapi.commands.info.PrinterInfo;
 import slug2k.ffapi.commands.status.EndstopStatus;
+import slug2k.ffapi.commands.status.PrintStatus;
 import slug2k.ffapi.exceptions.PrinterException;
 import slug2k.ffapi.safety.ThermalSafety;
 
@@ -119,13 +120,32 @@ public class PrintMonitor {
             if (shouldSyncDiscord()) sendDiscordReport();
             sleep(1000);
         }
-        Logger.log("Print completed, sending notification to discord and quitting.");
-        sendImageToWebhook("Print complete!", "Your print has finished!", EmbedColors.GREEN);
+        if (didPrintComplete()) {
+            Logger.log("Print completed, sending notification to discord and quitting.");
+            sendImageToWebhook("Print complete!", "Your print has finished!", EmbedColors.GREEN);
+        } else {
+            Logger.error("Print was cancelled locally, sending notification to discord and quitting.");
+            sendImageToWebhook("Print cancelled", "The print was cancelled locally", EmbedColors.ORANGE);
+        }
         sleep(1000);
-        defectThread.shutdownNow();
+        defectThread.shutdown();
         sleep(1000);
-        //todo figure out why it's not exiting on it's own after
+        //todo figure out why it's not exiting on its own after
         System.exit(0);
+    }
+
+    /**
+     * Checks if the print fully completed
+     * @return boolean
+     */
+    private boolean didPrintComplete() {
+        try {
+            PrintStatus ps = client.getPrintStatus();
+            return ps.layerProgress.currentLayer == ps.layerProgress.totalLayers;
+        } catch (PrinterException e) {
+            Logger.error("didPrintComplete() check error: " + e.getMessage());
+            return false;
+        }
     }
 
     /**
