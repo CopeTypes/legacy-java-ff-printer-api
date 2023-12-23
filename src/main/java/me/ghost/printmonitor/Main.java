@@ -22,6 +22,10 @@ public class Main {
                 doDump(args[0]);
                 System.exit(0);
             }
+            else if (args[1].equalsIgnoreCase("dump_layer")) {
+                dumpLayerData(args[0]);
+                System.exit(0);
+            }
         }
         try {
             PrintMonitor monitor = new PrintMonitor(args[0], config.webhookUrl);
@@ -54,5 +58,13 @@ public class Main {
             Thread.sleep(1000);
             client.getLocationInfo();
         } catch (PrinterException | InterruptedException ignored) {}
+    }
+
+    private static void dumpLayerData(String printerIp) {
+        PrinterClient client = new PrinterClient(printerIp);
+        Logger.isDebug = true;
+        try {
+            client.getPrintStatus();
+        } catch (PrinterException ignored) {}
     }
 }

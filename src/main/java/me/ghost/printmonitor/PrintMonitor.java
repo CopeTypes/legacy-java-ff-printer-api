@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static me.ghost.printapi.PrintMonitorApi.DefectStatus;
 
@@ -127,9 +128,8 @@ public class PrintMonitor {
             Logger.error("Print was cancelled locally, sending notification to discord and quitting.");
             sendImageToWebhook("Print cancelled", "The print was cancelled locally", EmbedColors.ORANGE);
         }
-        sleep(1000);
-        defectThread.shutdown();
-        sleep(1000);
+        try { if (!defectThread.awaitTermination(10, TimeUnit.SECONDS)) defectThread.shutdownNow(); }
+        catch (InterruptedException ignored) { defectThread.shutdownNow(); }
         //todo figure out why it's not exiting on its own after
         System.exit(0);
     }

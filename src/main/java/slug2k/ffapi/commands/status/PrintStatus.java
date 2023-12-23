@@ -29,6 +29,10 @@ public class PrintStatus {
         rawLayerProgress = layerData;
         String[] ld = layerData.split("/");
         layerProgress = new LayerProgress(Integer.parseInt(ld[0]), Integer.parseInt(ld[1]));
+        // the progress is wrong sometimes? not sure why or maybe im too high...
+        Logger.debug("layerProgress current: " + layerProgress.currentLayer);
+        Logger.debug("layerProgress total: " + layerProgress.totalLayers);
+        Logger.debug("layerProgress %: " + layerProgress.progress);
     }
 
     /**
