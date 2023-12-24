@@ -19,7 +19,7 @@ public class Main {
                 Logger.log("No online FlashForge printer found.");
                 System.exit(-1);
             }
-            Logger.log("Found printer  at " + printerIp);
+            Logger.log("Found printer at " + printerIp);
             //Logger.log("You need to provide the printer ip");
             //System.exit(-1);
         } else {
