@@ -45,7 +45,7 @@ public class PrinterScanner {
             return statusCode == 200;
         } catch (IOException e) {
             return false;
-        }s
+        }
     }
 
 }
