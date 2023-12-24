@@ -1,5 +1,6 @@
 package me.ghost.printmonitor;
 
+import me.ghost.printapi.util.PrinterScanner;
 import slug2k.ffapi.Logger;
 import slug2k.ffapi.clients.PrinterClient;
 import slug2k.ffapi.exceptions.PrinterException;
@@ -7,9 +8,22 @@ import slug2k.ffapi.exceptions.PrinterException;
 public class Main {
     // java -jar jar_name.jar printer_ip (debug)
     public static void main(String[] args) {
-        if (args.length < 1) {
-            Logger.log("You need to provide the printer ip");
-            System.exit(-1);
+        String printerIp;
+        if (args.length < 1) { // scan for printers if no IP is provided
+            // this won't let the user use additional args like normal
+            // todo see if we care about this
+            Logger.log("No printer ip provided, scanning for printers...");
+            PrinterScanner scanner = new PrinterScanner();
+            printerIp = scanner.findPrinter();
+            if (printerIp == null) {
+                Logger.log("No online FlashForge printer found.");
+                System.exit(-1);
+            }
+            Logger.log("Found printer  at " + printerIp);
+            //Logger.log("You need to provide the printer ip");
+            //System.exit(-1);
+        } else {
+            printerIp = args[0];
         }
         Config config = new Config();
         if (config.apiKey == null || config.webhookUrl == null) {
@@ -28,7 +42,7 @@ public class Main {
             }
         }
         try {
-            PrintMonitor monitor = new PrintMonitor(args[0], config.webhookUrl);
+            PrintMonitor monitor = new PrintMonitor(printerIp, config.webhookUrl);
             monitor.start();
         } catch (PrinterException | InterruptedException e) {
             Logger.error("Unable to start PrintMonitor: " + e.getMessage());
