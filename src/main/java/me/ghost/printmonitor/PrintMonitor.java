@@ -7,6 +7,7 @@ import slug2k.ffapi.Logger;
 import slug2k.ffapi.clients.PrinterClient;
 import slug2k.ffapi.commands.extra.PrintReport;
 import slug2k.ffapi.commands.info.PrinterInfo;
+import slug2k.ffapi.commands.info.TempInfo;
 import slug2k.ffapi.commands.status.EndstopStatus;
 import slug2k.ffapi.commands.status.PrintStatus;
 import slug2k.ffapi.exceptions.PrinterException;
@@ -121,27 +122,56 @@ public class PrintMonitor {
             if (shouldSyncDiscord()) sendDiscordReport();
             sleep(1000);
         }
-        if (didPrintComplete()) {
-            Logger.log("Print completed, sending notification to discord and quitting.");
+        boolean completed = didPrintComplete();
+        if (completed) {
+            Logger.log("Print completed, sending notification to discord");
             sendImageToWebhook("Print complete!", "Your print has finished!", EmbedColors.GREEN);
         } else {
-            Logger.error("Print was cancelled locally, sending notification to discord and quitting.");
+            Logger.error("Print was cancelled locally, sending notification to discord");
             sendImageToWebhook("Print cancelled", "The print was cancelled locally", EmbedColors.ORANGE);
         }
         try { if (!defectThread.awaitTermination(10, TimeUnit.SECONDS)) defectThread.shutdownNow(); }
         catch (InterruptedException ignored) { defectThread.shutdownNow(); }
+
+        if (!completed) System.exit(0);
+        waitForPartCooling();
         //todo figure out why it's not exiting on its own after
         System.exit(0);
+    }
+
+    /**
+     * Waits for the part to cool down, and sends a notification to discord<br>
+     * when it's ready for removal
+     */
+    private void waitForPartCooling() {
+        Logger.log("Waiting for part to cool down");
+        boolean cooled = false;
+        while (!cooled) {
+            cooled = isPartCooled();
+            sleep(SystemTimer.MINUTES_1);
+        }
+        sendMessage("Print Ready!", "Your print is ready for removal!", EmbedColors.GREEN);
+    }
+
+    private boolean isPartCooled() {
+        try {
+            TempInfo temps = client.getTempInfo();
+            return temps.isCooled();
+        } catch (PrinterException e) {
+            Logger.error("isPartCooled() check error: " + e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Checks if the print fully completed
      * @return boolean
      */
+    // todo debug this, doesn't seem to be working properly
     private boolean didPrintComplete() {
         try {
             PrintStatus ps = client.getPrintStatus();
-            return ps.layerProgress.currentLayer == ps.layerProgress.totalLayers;
+            return ps.currentLayer().equals(ps.totalLayers());
         } catch (PrinterException e) {
             Logger.error("didPrintComplete() check error: " + e.getMessage());
             return false;
@@ -340,7 +370,7 @@ public class PrintMonitor {
     }
 
     private boolean shouldCheckDefect() {
-        if (lastFailCheck.hasPassed(SystemTimer.FIVE_SECS)) {
+        if (lastFailCheck.hasPassed(SystemTimer.SECONDS_5)) {
             lastFailCheck.reset();
             return true;
         }
@@ -348,7 +378,7 @@ public class PrintMonitor {
     }
 
     private boolean shouldSync() {
-        if (lastSync.hasPassed(SystemTimer.FIVE_SECS)) {
+        if (lastSync.hasPassed(SystemTimer.SECONDS_5)) {
             lastSync.reset();
             return true;
         }
@@ -356,7 +386,7 @@ public class PrintMonitor {
     }
 
     private boolean shouldSyncDiscord() {
-        if (lastDiscordSync.hasPassed(SystemTimer.FIVE_MINS)) {
+        if (lastDiscordSync.hasPassed(SystemTimer.MINUTES_5)) {
             lastDiscordSync.reset();
             return true;
         }
@@ -364,7 +394,7 @@ public class PrintMonitor {
     }
 
     private boolean shouldCheckTemps() {
-        if (lastTempCheck.hasPassed(SystemTimer.TEN_SECS)) {
+        if (lastTempCheck.hasPassed(SystemTimer.SECONDS_10)) {
             lastTempCheck.reset();
             return true;
         }

@@ -130,7 +130,7 @@ public class PrintMonitorApi {
             try {
                 return p.waitFor(25, TimeUnit.SECONDS); //in case the python script hangs
             } catch (InterruptedException e) {
-                if (command.equalsIgnoreCase("defect_check")) {
+                if (command.equalsIgnoreCase("check_defect")) {
                     Logger.debug("runCommand defect_check timed out, refreshing printer uuid's");
                     refreshUUIDs(); // this *should* help reduce api errors (like 212)
                 }

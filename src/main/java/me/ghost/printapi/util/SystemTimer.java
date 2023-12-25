@@ -60,7 +60,14 @@ public class SystemTimer {
     }
 
 
-    public static final long FIVE_SECS = 5000;
-    public static final long TEN_SECS = 10000;
-    public static final long FIVE_MINS = 300000;
+    public static final long SECONDS_5 = 5000;
+    public static final long SECONDS_10 = 10000;
+    public static final long SECONDS_15 = 15000;
+    public static final long SECONDS_30 = 30000;
+    public static final long MINUTES_1 = 60000;
+    public static final long MINUTES_5 = 300000;
+    public static final long MINUTES_10 = 600000;
+    public static final long MINUTES_15 = 900000;
+    public static final long MINUTES_30 = 1800000;
+
 }

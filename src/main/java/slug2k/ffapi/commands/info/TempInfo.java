@@ -27,6 +27,13 @@ public class TempInfo {
         Logger.debug("Bed temp is " + bedTemp.getFull());
     }
 
+    /**
+     * Checks if the printer has cooled down enough for part removal
+     */
+    public boolean isCooled() {
+        return bedTemp.getCurrent() <= 40.0D && extruderTemp.getCurrent() <= 200.0D;
+    }
+
     public class TempData {
         public String current = "";
         public String set = "";
@@ -65,5 +72,8 @@ public class TempInfo {
             if (set == null) return current;
             return current + "/" + set;
         }
+
+        public double getCurrent() { return Double.parseDouble(current); }
+        public double getSet() { return Double.parseDouble(set); }
     }
 }
