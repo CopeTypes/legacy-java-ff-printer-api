@@ -1,20 +1,16 @@
 package slug2k.ffapi.commands.status;
 
 import slug2k.ffapi.Logger;
-import slug2k.ffapi.commands.extra.LayerProgress;
 
 /**
  * Class for progress information from the current print
  */
 public class PrintStatus {
 
-    public String byteProgress;
-    /**
-     * The layer progress like "12/34"
-     */
-    public String rawLayerProgress;
-
-    public LayerProgress layerProgress;
+    private final String SD_CURRENT;
+    private final String SD_TOTAL;
+    private final String LAYER_CURRENT;
+    private final String LAYER_TOTAL;
 
     /**
      * Creates a PrintStatus instance from an M27 command replay
@@ -24,32 +20,31 @@ public class PrintStatus {
         Logger.debug("PrintStatus replay:\n" + replay);
         String[] data = replay.split("\n");
         // this should be safe because it returns default values when not printing
-        byteProgress = data[1].replace("SD printing byte ", "").trim();
-        String layerData = data[2].replace("Layer: ", "").trim();
-        rawLayerProgress = layerData;
-        String[] ld = layerData.split("/");
-        layerProgress = new LayerProgress(Integer.parseInt(ld[0]), Integer.parseInt(ld[1]));
-        // the progress is wrong sometimes? not sure why or maybe im too high...
-        Logger.debug("layerProgress current: " + layerProgress.currentLayer);
-        Logger.debug("layerProgress total: " + layerProgress.totalLayers);
-        Logger.debug("layerProgress %: " + layerProgress.progress);
+
+        String sdProgress = data[1].replace("SD printing byte ", "").trim();
+        String[] sdProgressData = sdProgress.split("/");
+        SD_CURRENT = sdProgressData[0].trim();
+        SD_TOTAL = sdProgressData[1].trim();
+
+        String layerProgress = data[2].replace("Layer: ", "").trim();
+        String[] lpData = layerProgress.split("/");
+        LAYER_CURRENT = lpData[0].trim();
+        LAYER_TOTAL = lpData[1].trim();
     }
 
-    /**
-     * Gets the current layer being worked on
-     * @return Integer
-     */
-    public Integer currentLayer() {
-        return layerProgress.currentLayer;
+    public int getPrintPercent() {
+        int current = Integer.parseInt(SD_CURRENT);
+        int total = Integer.parseInt(SD_TOTAL);
+        double perc = (current / (double) total) * 100;
+        return (int) Math.round(perc);
     }
 
-    /**
-     * Gets the total numbers of layers in the current print
-     * @return Integer
-     */
-    public Integer totalLayers() {
-        return layerProgress.totalLayers;
+    public boolean isComplete() {
+        if (SD_CURRENT.equalsIgnoreCase(SD_TOTAL)) return true;
+        return LAYER_CURRENT.equalsIgnoreCase(LAYER_TOTAL);
     }
+
+
 
 
 }

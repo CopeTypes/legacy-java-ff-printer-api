@@ -6,7 +6,6 @@ import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import club.minnced.discord.webhook.send.WebhookMessage;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import slug2k.ffapi.Logger;
-import slug2k.ffapi.commands.extra.PrintReport;
 
 import java.awt.*;
 import java.io.File;
@@ -17,6 +16,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+
 
 /**
  * Class for handling network interactions
@@ -109,24 +109,14 @@ public class NetworkUtil {
         return execute(wh, msg);
     }
 
-    /**
-     * Sends a PrintReport to the supplied webhook url, with an image of the current progress
-     * @param webhook The target webhook url
-     * @param report PrintReport instance (from PrinterClient)
-     * @param image (File) The image to upload
-     * @return
-     */
-    public static boolean sendPrintReport(String webhook, PrintReport report, File image) {
+    public static boolean sendEmbed(String webhook, WebhookEmbed embed) {
         WebhookClient wh = WebhookClient.withUrl(webhook);
-        WebhookEmbed embed = new WebhookEmbedBuilder()
-                .setTitle(new WebhookEmbed.EmbedTitle("Print Status Report", null))
-                .setDescription("Stats on the current print job")
-                .addField(new WebhookEmbed.EmbedField(false, "Current File", report.currentFile))
-                .addField(new WebhookEmbed.EmbedField(false, "Print Progress", Math.round(report.layerProgress.progress) + "%"))
-                .addField(new WebhookEmbed.EmbedField(false, "Extruder Temp", report.extruderTemp))
-                .addField(new WebhookEmbed.EmbedField(false, "Bed Temp", report.bedTemp))
-                .setImageUrl("attachment://capture.jpg")
-                .build();
+        WebhookMessage message = new WebhookMessageBuilder().addEmbeds(embed).build();
+        return execute(wh, message);
+    }
+
+    public static boolean sendEmbed(String webhook, WebhookEmbed embed, File image) {
+        WebhookClient wh = WebhookClient.withUrl(webhook);
         WebhookMessage message = new WebhookMessageBuilder().addFile("capture.jpg", image).addEmbeds(embed).build();
         return execute(wh, message);
     }

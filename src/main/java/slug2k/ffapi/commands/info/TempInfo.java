@@ -8,8 +8,8 @@ import slug2k.ffapi.Logger;
  */
 public class TempInfo {
 
-    public TempData extruderTemp;
-    public TempData bedTemp;
+    private TempData extruderTemp;
+    private TempData bedTemp;
 
     /**
      * Creates a TempInfo instance from a M105 command replay
@@ -27,16 +27,28 @@ public class TempInfo {
         Logger.debug("Bed temp is " + bedTemp.getFull());
     }
 
+    public TempData getExtruderTemp() {
+        return extruderTemp;
+    }
+
+    public TempData getBedTemp() {
+        return bedTemp;
+    }
+
     /**
      * Checks if the printer has cooled down enough for part removal
      */
     public boolean isCooled() {
-        return bedTemp.getCurrent() <= 40.0D && extruderTemp.getCurrent() <= 200.0D;
+        return bedTemp.getCurrent() <= 40 && extruderTemp.getCurrent() <= 200;
     }
 
-    public class TempData {
-        public String current = "";
-        public String set = "";
+    public boolean areTempsSafe() {
+        return extruderTemp.getCurrent() < 250 && bedTemp.getCurrent() < 100;
+    }
+
+    public static class TempData {
+        private String current = "";
+        private String set = "";
 
         /**
          * Get extruder/bed temps from a M105 command response
@@ -73,7 +85,7 @@ public class TempInfo {
             return current + "/" + set;
         }
 
-        public double getCurrent() { return Double.parseDouble(current); }
-        public double getSet() { return Double.parseDouble(set); }
+        public int getCurrent() { return Integer.parseInt(current); }
+        public int getSet() { return Integer.parseInt(set); }
     }
 }

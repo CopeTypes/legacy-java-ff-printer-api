@@ -1,24 +1,23 @@
 package me.ghost.printmonitor;
 
+import club.minnced.discord.webhook.send.WebhookEmbed;
+import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import me.ghost.printapi.PrintMonitorApi;
 import me.ghost.printapi.PrinterWebcam;
 import me.ghost.printapi.util.*;
 import slug2k.ffapi.Logger;
 import slug2k.ffapi.clients.PrinterClient;
-import slug2k.ffapi.commands.extra.PrintReport;
 import slug2k.ffapi.commands.info.PrinterInfo;
 import slug2k.ffapi.commands.info.TempInfo;
 import slug2k.ffapi.commands.status.EndstopStatus;
 import slug2k.ffapi.commands.status.PrintStatus;
 import slug2k.ffapi.exceptions.PrinterException;
-import slug2k.ffapi.safety.ThermalSafety;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static me.ghost.printapi.PrintMonitorApi.DefectStatus;
 
@@ -32,13 +31,8 @@ public class PrintMonitor {
     private String webhookUrl;
     private PrinterClient client;
     private PrinterWebcam webcam;
-    private ThermalSafety thermalSafety;
+    //private ThermalSafety thermalSafety;
 
-    //private TempInfo tempInfo;
-    //private PrintStatus printStatus;
-    //private EndstopStatus endstopStatus;
-    //private MachineStatus machineStatus;
-    //private MoveMode moveStatus;
     private PrinterInfo printerInfo;
 
     private boolean isPrinting = true;
@@ -64,7 +58,7 @@ public class PrintMonitor {
         this.webhookUrl = webhookUrl;
         client = new PrinterClient(printerIp);
         webcam = new PrinterWebcam(printerIp);
-        thermalSafety = new ThermalSafety(client);
+        //thermalSafety = new ThermalSafety(client);
 
         long t = System.currentTimeMillis() - 300000;
         lastSync.setTime(t);
@@ -122,6 +116,10 @@ public class PrintMonitor {
             if (shouldSyncDiscord()) sendDiscordReport();
             sleep(1000);
         }
+        finish();
+    }
+
+    private void finish() {
         boolean completed = didPrintComplete();
         if (completed) {
             Logger.log("Print completed, sending notification to discord");
@@ -130,11 +128,8 @@ public class PrintMonitor {
             Logger.error("Print was cancelled locally, sending notification to discord");
             sendImageToWebhook("Print cancelled", "The print was cancelled locally", EmbedColors.ORANGE);
         }
-        try { if (!defectThread.awaitTermination(10, TimeUnit.SECONDS)) defectThread.shutdownNow(); }
-        catch (InterruptedException ignored) { defectThread.shutdownNow(); }
-
         if (!completed) System.exit(0);
-        waitForPartCooling();
+        waitForPartCooling(); //todo this seems to be throwing an error?
         //todo figure out why it's not exiting on its own after
         System.exit(0);
     }
@@ -171,7 +166,7 @@ public class PrintMonitor {
     private boolean didPrintComplete() {
         try {
             PrintStatus ps = client.getPrintStatus();
-            return ps.currentLayer().equals(ps.totalLayers());
+            return ps.isComplete();
         } catch (PrinterException e) {
             Logger.error("didPrintComplete() check error: " + e.getMessage());
             return false;
@@ -185,14 +180,14 @@ public class PrintMonitor {
     private void tempCheck() {
         Logger.debug("tempCheck()");
         try {
-            if (!thermalSafety.areTempsSafe()) thermalShutdown();
+            if (!client.getTempInfo().areTempsSafe()) thermalShutdown();
         } catch (PrinterException e) {
             Logger.error("Error while checking printer temps: " + e.getMessage());
             int tries = 0;
             while (tries <= 5) {
                 sleep(1000);
                 try {
-                    if (!thermalSafety.areTempsSafe()) thermalShutdown();
+                    if (!client.getTempInfo().areTempsSafe()) thermalShutdown();
                 } catch (PrinterException ignored) {
                     tries++;
                 }
@@ -201,8 +196,10 @@ public class PrintMonitor {
     }
 
     private void sendMessage(String title, String message, String color) {
-        //todo handle sending failure
-        NetworkUtil.sendWebhookMessage(webhookUrl, title, message, color);
+        if (!NetworkUtil.sendWebhookMessage(webhookUrl, title, message, color)) {
+            Logger.error("Unable to send message to webhook | Title: " + title + " | Content: " + message);
+            //todo some other fallback notification method
+        }
     }
 
     /**
@@ -242,6 +239,7 @@ public class PrintMonitor {
         }
     }
 
+
     private void doSync() {
         Logger.debug("doSync()");
         try {
@@ -269,9 +267,20 @@ public class PrintMonitor {
                 Logger.error("Unable to send print report to discord, failed to save image from printer webcam.");
                 return;
             }
-            PrintReport report = client.getPrintReport();
-            if (!NetworkUtil.sendPrintReport(webhookUrl, report, new File(out)))
+            EndstopStatus esStatus = client.getEndstopStatus();
+            PrintStatus printStatus = client.getPrintStatus();
+            TempInfo tempInfo = client.getTempInfo();
+            WebhookEmbed embed = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle("Print Status Report", null))
+                    .setDescription("Working on " + esStatus.currentFile)
+                    .addField(new WebhookEmbed.EmbedField(false, "Print Progress", printStatus.getPrintPercent() + "%"))
+                    .addField(new WebhookEmbed.EmbedField(false, "Extruder Temp", tempInfo.getExtruderTemp().getFull()))
+                    .addField(new WebhookEmbed.EmbedField(false, "Bed Temp", tempInfo.getBedTemp().getFull()))
+                    .setImageUrl("attachment://capture.jpg")
+                    .build();
+            if (!NetworkUtil.sendEmbed(webhookUrl, embed, new File(out))) {
                 Logger.error("Failed to send print report to discord webhook.");
+            }
         } catch (PrinterException e) {
             Logger.error("Error getting print report for sendDiscordReport: " + e);
         }

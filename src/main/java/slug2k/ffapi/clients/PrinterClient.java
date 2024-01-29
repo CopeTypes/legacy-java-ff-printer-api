@@ -1,7 +1,6 @@
 package slug2k.ffapi.clients;
 
 import slug2k.ffapi.Logger;
-import slug2k.ffapi.commands.extra.PrintReport;
 import slug2k.ffapi.commands.info.LocationInfo;
 import slug2k.ffapi.commands.info.PrinterInfo;
 import slug2k.ffapi.commands.info.TempInfo;
@@ -229,19 +228,6 @@ public class PrinterClient extends TcpPrinterClient {
 			Logger.log("getEndstopStatus error: " + e.getMessage());
 			return lastEndstopStatus; // not sure if this is a *good* fix
 		}
-	}
-
-	/**
-	 * Generates a PrintReport<br>
-	 * Used for sending status updates to Discord
-	 * @return PrintReport instance
-	 * @throws PrinterException Communication error
-	 */
-	public PrintReport getPrintReport() throws PrinterException {
-		EndstopStatus endstopStatus = getEndstopStatus();
-		PrintStatus printStatus = getPrintStatus();
-		TempInfo tempInfo = getTempInfo();
-		return new PrintReport(endstopStatus, printStatus, tempInfo);
 	}
 
 }

@@ -82,14 +82,6 @@ public class PrintMonitorApi {
             Logger.error("getDefectStatus() unable to read defect.txt: " + e.getMessage());
             return new DefectStatus(false, -1);
         }
-
-        //String result = Files.readString(resultFile.toPath());
-        //String[] results = result.split("\n");
-        //try { return new DefectStatus(Boolean.parseBoolean(results[0]), Float.parseFloat(results[1])); }
-        //catch (ArrayIndexOutOfBoundsException e) { // this also should never happen
-        //    Logger.error("Error getting DefectStatus: " + e.getMessage());
-        //    return null;
-        //}
     }
 
     /**

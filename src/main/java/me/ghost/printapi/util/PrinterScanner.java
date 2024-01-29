@@ -53,7 +53,7 @@ public class PrinterScanner {
      * @param port Port to use (should be 8080)
      *
      */
-    private boolean isPrinter(String ip, String port) {
+    public static boolean isPrinter(String ip, String port) {
         String streamUrl = "http://" + ip + ":" + port + "/?action=stream";
         try {
             URL url = new URL(streamUrl);

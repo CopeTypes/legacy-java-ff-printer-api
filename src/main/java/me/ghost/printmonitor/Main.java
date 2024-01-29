@@ -10,8 +10,6 @@ public class Main {
     public static void main(String[] args) {
         String printerIp;
         if (args.length < 1) { // scan for printers if no IP is provided
-            // this won't let the user use additional args like normal
-            // todo see if we care about this
             Logger.log("No printer ip provided, scanning for printers...");
             PrinterScanner scanner = new PrinterScanner();
             printerIp = scanner.findPrinter();
@@ -20,10 +18,12 @@ public class Main {
                 System.exit(-1);
             }
             Logger.log("Found printer at " + printerIp);
-            //Logger.log("You need to provide the printer ip");
-            //System.exit(-1);
         } else {
             printerIp = args[0];
+            if (!PrinterScanner.isPrinter(printerIp, "8080")) {
+                Logger.error("Provided printer ip is invalid.");
+                System.exit(-1);
+            }
         }
         Config config = new Config();
         if (config.apiKey == null || config.webhookUrl == null) {
@@ -42,6 +42,7 @@ public class Main {
             }
         }
         try {
+            Logger.log("Starting print monitor...");
             PrintMonitor monitor = new PrintMonitor(printerIp, config.webhookUrl);
             monitor.start();
         } catch (PrinterException | InterruptedException e) {
